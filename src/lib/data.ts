@@ -94,11 +94,8 @@ function buildBoardMeta(slug: string, readmeRaw: string, examples: ExampleMeta[]
 }
 
 function buildExampleMeta(globKey: string, raw: string, boardSlug: string, exampleSlug: string): ExampleMeta {
-  const { data, body } = splitFrontmatter(raw);
-  const title =
-    firstHeading(body) ||
-    (typeof data["title"] === "string" && data["title"]) ||
-    exampleSlug;
+  const { data } = splitFrontmatter(raw);
+  const title = exampleSlug;
   const sys = typeof data["sys"] === "string" ? data["sys"] : undefined;
   const lastRaw = data["last_update"] ?? data["lastUpdate"];
   const lastUpdate = typeof lastRaw === "string" ? lastRaw : undefined;
@@ -219,6 +216,17 @@ function boardReadmeKey(slug: string, kind: "en" | "zh"): string | undefined {
   return Object.keys(kind === "zh" ? readmeZhGlob : boardReadmeGlob).find((k) =>
     k.replace(/\\/g, "/").includes(suffix),
   );
+}
+
+/** Strip the first `# …` heading if it matches the board product name (avoids duplication with page header). */
+export function stripDuplicateHeading(body: string, product: string): string {
+  const m = body.match(/^(#\s+(.+))(\r?\n)/);
+  if (!m) return body;
+  const heading = m[2].trim();
+  if (heading === product || heading === product.trim()) {
+    return body.slice(m[0].length).trimStart();
+  }
+  return body;
 }
 
 /** Board intro markdown body (no frontmatter), zh preferred */

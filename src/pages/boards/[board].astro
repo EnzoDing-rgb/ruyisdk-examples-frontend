@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from "astro";
 
 import Layout from "../../layouts/Layout.astro";
-import { getAllBoards, getBoardBySlug, getBoardReadmeBody } from "../../lib/data";
+import { getAllBoards, getBoardBySlug, getBoardReadmeBody, stripDuplicateHeading } from "../../lib/data";
 import { renderMarkdownToHtml } from "../../lib/renderMarkdown";
 import { STATUS_LABEL_ZH } from "../../lib/status-labels";
 
@@ -16,56 +16,86 @@ if (!board) {
   return Astro.redirect("/");
 }
 
-const introMd = getBoardReadmeBody(board.slug, "zh") ?? "";
+const rawIntroMd = getBoardReadmeBody(board.slug, "zh") ?? "";
+const introMd = rawIntroMd ? stripDuplicateHeading(rawIntroMd, board.product) : "";
 const introHtml = introMd ? await renderMarkdownToHtml(introMd) : "";
 ---
 
 <Layout title={`${board.product} — RuyiSDK Examples`}>
-  <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <!-- Breadcrumb -->
     <nav class="text-muted-foreground mb-6 text-sm">
       <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      <span class="mx-2">/</span>
-      <span class="text-foreground">{board.product}</span>
+      <span class="mx-1.5 select-none">/</span>
+      <span class="text-foreground font-medium">{board.product}</span>
     </nav>
 
+    <!-- Board header -->
     <header class="mb-8">
-      <h1 class="text-foreground mb-2 text-3xl font-semibold tracking-tight">{board.product}</h1>
-      <p class="text-muted-foreground text-sm">
+      <h1 class="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">{board.product}</h1>
+      <p class="text-muted-foreground mt-1 text-sm">
         {board.cpu}
         {board.ram ? ` · ${board.ram}` : ""}
         {board.vendor ? ` · ${board.vendor}` : ""}
       </p>
     </header>
 
+    <!-- README intro -->
     {
       introHtml && (
         <article class="prose prose-slate dark:prose-invert mb-10 max-w-none" set:html={introHtml} />
       )
     }
 
+    <!-- Divider -->
+    <hr class="border-border mb-8" />
+
+    <!-- Example list -->
     <section>
       <h2 class="text-foreground mb-4 text-lg font-semibold">示例列表</h2>
-      <ul class="divide-border divide-y rounded-xl border">
-        {
-          board.examples.map((ex) => (
-            <li class="hover:bg-muted/40 transition-colors">
-              <a
-                href={`/boards/${encodeURIComponent(board.slug)}/${encodeURIComponent(ex.slug)}/`}
-                class="text-foreground flex flex-wrap items-center justify-between gap-2 px-4 py-3 no-underline"
-              >
-                <span class="font-medium">{ex.title}</span>
-                <span class="text-muted-foreground flex shrink-0 items-center gap-2 text-sm">
-                  <span class="bg-secondary text-secondary-foreground rounded-md px-2 py-0.5 text-xs">
-                    {STATUS_LABEL_ZH[ex.status]}
-                  </span>
-                  {ex.sys ? <span>{ex.sys}</span> : null}
-                  {ex.lastUpdate ? <span>{ex.lastUpdate}</span> : null}
-                </span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+      {board.examples.length === 0 ? (
+        <div class="text-muted-foreground rounded-xl border border-dashed p-10 text-center text-sm">
+          暂无示例。
+        </div>
+      ) : (
+        <div class="divide-border overflow-hidden rounded-xl border">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-muted/50 text-muted-foreground text-left text-xs">
+                <th class="px-4 py-2.5 font-medium">示例名</th>
+                <th class="px-4 py-2.5 font-medium">分类</th>
+                <th class="hidden px-4 py-2.5 font-medium sm:table-cell">系统</th>
+                <th class="hidden px-4 py-2.5 text-right font-medium sm:table-cell">更新日期</th>
+              </tr>
+            </thead>
+            <tbody class="divide-border divide-y">
+              {board.examples.map((ex) => (
+                <tr class="hover:bg-muted/40 transition-colors">
+                  <td class="px-4 py-3">
+                    <a
+                      href={`/boards/${encodeURIComponent(board.slug)}/${encodeURIComponent(ex.slug)}/`}
+                      class="text-foreground font-medium hover:underline underline-offset-4"
+                    >
+                      {ex.title}
+                    </a>
+                  </td>
+                  <td class="px-4 py-3">
+                    <span class="bg-secondary text-secondary-foreground inline-block rounded-md px-2 py-0.5 text-xs">
+                      {STATUS_LABEL_ZH[ex.status]}
+                    </span>
+                  </td>
+                  <td class="text-muted-foreground hidden px-4 py-3 sm:table-cell">
+                    {ex.sys ?? "—"}
+                  </td>
+                  <td class="text-muted-foreground hidden px-4 py-3 text-right sm:table-cell">
+                    {ex.lastUpdate ?? "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </section>
   </div>
 </Layout>

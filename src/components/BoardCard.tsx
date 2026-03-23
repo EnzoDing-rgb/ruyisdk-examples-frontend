@@ -2,8 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,34 +23,25 @@ export function BoardCard({ product, slug, cpu, vendor, exampleCount, className 
     <a
       href={href}
       className={cn(
-        "block min-w-0 rounded-xl outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring",
+        "block rounded-xl outline-none ring-offset-background transition-transform duration-150 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring",
         className,
       )}
     >
-      <Card className="h-full transition-shadow hover:shadow-md">
-        <CardHeader className="gap-2">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <CardTitle className="line-clamp-2 text-lg">{product}</CardTitle>
-            <Badge variant="secondary" className="shrink-0">
+      <Card className="h-full transition-shadow duration-150 hover:shadow-md">
+        <CardHeader className="gap-1.5 pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-lg font-semibold leading-snug">{product}</CardTitle>
+            <Badge variant="secondary" className="shrink-0 text-xs">
               {exampleCount} 个示例
             </Badge>
           </div>
-          <CardDescription className="line-clamp-2 font-mono text-xs">{slug}</CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <p className="text-muted-foreground text-sm">
-            <span className="font-medium text-foreground">CPU：</span>
             {cpu || "—"}
-            {vendor ? (
-              <>
-                {" "}
-                <span className="font-medium text-foreground">厂商：</span>
-                {vendor}
-              </>
-            ) : null}
+            {vendor ? ` · ${vendor}` : ""}
           </p>
         </CardContent>
-        <CardFooter className="text-muted-foreground justify-end text-xs">查看板子与示例</CardFooter>
       </Card>
     </a>
   );

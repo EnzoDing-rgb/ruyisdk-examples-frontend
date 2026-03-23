@@ -132,3 +132,20 @@ body {
     @apply bg-background text-foreground font-sans antialiased;
   }
 }
+
+/* Code blocks rendered by rehype-pretty-code */
+figure[data-rehype-pretty-code-figure] pre {
+  @apply rounded-lg border border-border;
+}
+figure[data-rehype-pretty-code-figure] [data-rehype-pretty-code-title] {
+  @apply rounded-t-lg border border-b-0 border-border bg-muted px-4 py-1.5 text-xs font-medium text-muted-foreground;
+}
+figure[data-rehype-pretty-code-figure] [data-rehype-pretty-code-title] + pre {
+  @apply rounded-t-none;
+}
+
+/* Prose image sizing */
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
