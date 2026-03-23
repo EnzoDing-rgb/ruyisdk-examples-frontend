@@ -22,9 +22,11 @@
 
 ## 2. 用户是谁？
 
-RISC-V 开发板用户，想在板子上跑程序但不知道从哪下手。
+RISC-V 开发板用户，**手里已有一块板子**，想在板子上跑程序但不知道从哪下手。
 
-## 3. 用户进来能看到什么？
+## 3. 用户进来能看到什么？（板子优先）
+
+开发者的出发点是「我手上有一块板子」，因此站点以**板子为入口**。
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -32,67 +34,95 @@ RISC-V 开发板用户，想在板子上跑程序但不知道从哪下手。
 │   RuyiSDK Examples                                         │
 │   在 RISC-V 开发板上运行你的第一个程序                         │
 │                                                             │
-│   ┌──────────┐  ┌──────────┐  ┌──────────┐                 │
-│   │ Hello    │  │ CoreMark │  │ GPIO 控制 │  ...           │
-│   │ World    │  │ 跑分测试  │  │           │                 │
-│   │ 入门必备  │  │ 性能评估  │  │ 硬件操作   │                 │
-│   └──────────┘  └──────────┘  └──────────┘                 │
-│                                                             │
-│   ─────────────────────────────────────────────────────    │
-│                                                             │
-│   按板子找：                                                │
-│   [Milk-V Duo] [VisionFive 2] [LicheePi4A] [Milk-V Mars] │
+│   ┌──────────────┐  ┌──────────────┐                       │
+│   │ Milk-V Duo S │  │ Lichee Pi 4A │  ...                  │
+│   │ SG2000       │  │ TH1520       │                       │
+│   │ 4 个示例      │  │ 3 个示例      │                       │
+│   └──────────────┘  └──────────────┘                       │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**两种找法：**
+**导航流程：**
 
-1. **看示例卡片** → 点进去 → 看这个示例支持哪些板子
-2. **按板子找** → 点板子 → 看这个板子上能跑哪些示例
+1. **首页看到板子卡片** → 点进去 → 看这块板子上能跑的所有示例列表
+2. **点一个示例** → 看到完整的 Markdown 教程（含图片、代码块）
 
-## 4. 示例是什么格式？
+## 4. 内容仓库结构（test-doc 实际）
 
-每个示例是一个 **文件夹**，内为 Markdown，可配图。
+内容仓库（当前 `DuoQilai/test-doc`）以**板子为顶层目录**，每块板子下有多个示例子目录：
 
 ```text
-sdk-examples/
-  hello-world/
-    README.md        # 中文说明
-    README_en.md     # 英文说明
-  coremark/
+test-doc/
+  Duo_S/                              # 板子目录
+    README.md                         # 板子介绍（英文，含 frontmatter）
+    README_zh.md                      # 板子介绍（中文）
+    others.yml                        # OS 兼容性数据
+    images/                           # 板子级别图片
+    HelloWorld/                       # 示例目录
+      example_HelloWorld_DuoS.md      # 示例正文
+      images/                         # 示例图片
+    Coremark/
+      example_Coremark_DuoS.md
+      images/
+    Pico-8SEG-LED/
+      example_Pico-8SEG-LED_DuoS.md
+      images/
+    Pico-ePaper-2.13/
+      example_Pico-ePaper-2.13_DuoS.md
+      images/
+  LicheePi4A/                         # 另一块板子
     README.md
-    README_en.md
-  gpio-demo/
-    README.md
-    README_en.md
+    README_zh.md
+    others.yml
+    HelloWorld/
+      example_HelloWorld_LPi4A.md
+    Coremark/
+      example_Coremark_LPi4A.md
+    Dhrystone/
+      Licheepi4A_Dhrystone.md
 ```
 
-每篇示例 Markdown 可带 frontmatter：
+### 板子 README.md frontmatter
 
 ```yaml
 ---
-标题: Hello World
-分类: 入门
-支持的板子:
-  - Milk-V Duo
-  - VisionFive 2
-  - LicheePi4A
-更新日期: 2026-03-20
+product: Milk-V Duo S
+cpu: SG2000
+cpu_core: XuanTie C906 + ARM Cortex-A53
+ram: 512MB
+vendor: Milk-V
 ---
-正文：怎么在板子上跑第一个程序...
 ```
+
+### 示例 .md frontmatter
+
+```yaml
+---
+sys: buildroot
+sys_ver: v1.1.4
+sys_var: v1
+status: basics          # basics | peripheral | others
+last_update: 2025-03-19
+---
+```
+
+`status` 字段用作分类：`basics` = 基础示例，`peripheral` = 外设示例，`others` = 其他。
+
+### 示例文件名约定
+
+- 通常为 `example_{ExampleName}_{BoardShort}.md`，但也有例外（如 `Licheepi4A_Dhrystone.md`）
+- 数据层扫描时取**每个示例子目录下的第一个 `.md` 文件**（排除 README）
 
 ## 5. 示例怎么分类？
 
-| 分类 | 什么意思 |
-| --- | --- |
-| 入门（Getting Started） | 第一个程序，从哪开始 |
-| 跑分（Benchmark） | 测性能（Coremark、Dhrystone） |
-| 硬件（Hardware） | 控制 GPIO、I2C 等 |
-| 网络（Network） | 网络相关 |
-| 图形（Graphics） | 屏幕、显示 |
-| 音视频（Multimedia） | 音频、视频 |
+基于 frontmatter 中的 `status` 字段：
+
+| status 值 | 分类名 | 含义 |
+| --- | --- | --- |
+| `basics` | 基础示例 | Hello World、Coremark 等入门程序 |
+| `peripheral` | 外设示例 | GPIO、LED、ePaper 等硬件外设 |
+| `others` | 其他 | Dhrystone 等额外示例 |
 
 ## 6. 与支持矩阵的关系
 
@@ -101,7 +131,7 @@ sdk-examples/
 | 已有板块 | 内容 |
 | --- | --- |
 | 首页板卡总览（`/`） | CPU / RAM / Core；Board / System 视图 |
-| OS 支持矩阵（`/table`） | 板子 × 操作系统 |
+| OS 支持矩阵（`/table`） | 板子 x 操作系统 |
 | 测试报告（`/reports`） | 某板 + 某系统下的实测记录 |
 
 Examples 站点与 matrix **无代码耦合**。若需导流，仅在 matrix 导航中加外链（可选，非必须）。
@@ -114,8 +144,16 @@ Examples 站点与 matrix **无代码耦合**。若需导流，仅在 matrix 导
 ruyisdk-examples-frontend/
   design.md                      # 本文档
   plan.md                        # 实施计划
+  test-doc/                      # 内容 submodule（板子→示例 Markdown）
   support-matrix-frontend/       # submodule，只读参考（不修改）
-  src/                           # 示例站点源码（待建）
+  src/
+    lib/data.ts                  # 数据层：扫描 test-doc，解析板子和示例
+    components/BoardCard.tsx     # 板子卡片
+    components/ExampleList.tsx   # 板子详情内的示例列表
+    layouts/Layout.astro         # 顶栏 + slot
+    pages/index.astro            # 首页：板子卡片网格
+    pages/boards/[board].astro   # 板子详情：示例列表
+    pages/boards/[board]/[example].astro  # 示例详情：Markdown 渲染
   ...
 ```
 
@@ -142,7 +180,8 @@ ruyisdk-examples-frontend/
 
 ## 8. 双语支持
 
-所有示例同时提供中英文版本（`README.md` / `README_en.md`）。
+板子介绍：`README.md`（英文）+ `README_zh.md`（中文）。
+示例正文：当前仅中文。后续增加英文版时，在同目录放 `*_en.md` 即可，数据层自动识别。
 
 ## 9. 开发与验收流程
 
@@ -173,33 +212,33 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 | | |
 | --- | --- |
-| **Agent 做什么** | 实现 `examples.ts`（glob 扫描、frontmatter 解析、中英文读取），在页面上输出示例列表验证 |
+| **Agent 做什么** | 实现 `data.ts`（glob 扫描 test-doc，解析板子 README frontmatter + 示例 .md frontmatter），在页面上输出板子及其示例列表验证 |
 | **是否需要人眼验收** | 否 |
 | **说明** | 纯后端逻辑，Agent 自己在控制台验证数据正确即可。你无需操作 |
 
-### Phase 3：首页
+### Phase 3：首页（板子卡片）
 
 | | |
 | --- | --- |
-| **Agent 做什么** | 搭建 Fedora 式布局：顶栏搜索框 + 左侧板子树形筛选 + 右侧示例卡片网格 |
+| **Agent 做什么** | 首页渲染板子卡片网格 + 搜索框，每张卡片显示板子名、CPU、示例数量，点击跳转到板子详情页 |
 | **是否需要人眼验收** | **是（重点验收）** |
-| **你应该看到** | 打开 `http://localhost:3000`，对照下面 §10 的线框图检查：(1) 左侧有板子筛选栏，点击某个板子后右侧卡片会过滤；(2) 右侧有示例卡片网格（至少 3 张：Hello World / CoreMark / GPIO 之类）；(3) 顶栏搜索框能输入文字，卡片随之过滤；(4) 整体视觉与 [matrix.ruyisdk.org](https://matrix.ruyisdk.org/) 风格一致（字体、配色、间距） |
+| **你应该看到** | 打开 `http://localhost:3000`，看到板子卡片（Milk-V Duo S、Lichee Pi 4A 等），搜索框能过滤，点击卡片能跳转 |
 
-### Phase 4：详情页 + 双语
+### Phase 4：板子详情页 + 示例详情页
 
 | | |
 | --- | --- |
-| **Agent 做什么** | 实现详情页（Markdown 渲染 + 支持的板子列表）；实现 `/zh-CN/` 路由和语言切换 |
+| **Agent 做什么** | 板子详情页列出该板子下所有示例；点击示例进入 Markdown 渲染页（含图片、代码高亮） |
 | **是否需要人眼验收** | **是（重点验收）** |
-| **你应该看到** | (1) 在首页点击任意卡片 → 跳转到详情页，看到标题、分类、日期、Markdown 正文（代码块有语法高亮）、底部「支持的板子」列表；(2) 顶栏有语言切换按钮，点击后 URL 变为 `/zh-CN/...`，页面内容切换为中文（或反之英文）；(3) 直接访问 `/zh-CN/` 能正常加载中文首页 |
+| **你应该看到** | (1) 点击板子卡片 → 看到该板子的示例列表（HelloWorld、Coremark 等）；(2) 点击某个示例 → 看到完整 Markdown 正文渲染，代码块有语法高亮，图片正常显示 |
 
-### Phase 5：质量收尾
+### Phase 5：质量收尾 + 双语
 
 | | |
 | --- | --- |
-| **Agent 做什么** | `pnpm build` 确认构建通过，样式全局检查，按需写 e2e 测试 |
+| **Agent 做什么** | `pnpm build` 确认构建通过，样式全局检查，双语切换（板子介绍 README/README_zh），按需写 e2e 测试 |
 | **是否需要人眼验收** | 是（最终验收） |
-| **你应该看到** | 完整走一遍：首页浏览 → 搜索 → 筛选 → 点卡片进详情 → 切语言 → 返回首页。所有环节无白屏、无错位、无 404。Agent 同时报告 `pnpm build` 退出码 0 |
+| **你应该看到** | 完整走一遍：首页浏览 → 搜索 → 点板子卡片 → 看示例列表 → 点示例看 Markdown → 返回。所有环节无白屏、无错位、无 404。Agent 同时报告 `pnpm build` 退出码 0 |
 
 ---
 
@@ -210,36 +249,62 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 | 独立站点的域名 / 子域 | 待定 |
 | `ruyisdk/` 下正式内容仓库名称 | 待定 |
 | matrix 是否加「示例教程」外链 | 待定 |
-| 第一个示例内容 | 待定 |
 | 示例是否关联上游代码仓库链接 | 待定 |
+| Vendor 分组数据源 | 待定（当前从 frontmatter vendor 字段聚合） |
 
-## 11. 页面布局（参考 Fedora）
+## 11. 页面布局
 
-Fedora 镜像站式：左侧树形筛选 + 右侧卡片网格 + 顶栏搜索。
+### 首页：板子卡片网格
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│  ┌──────────────┐  ┌────────────────────────────────────┐ │
-│  │ 搜索框        │  │                                     │ │
-│  ├──────────────┤  │  示例卡片网格                          │ │
-│  │              │  │  ┌────────┐┌────────┐┌────────┐ │ │
-│  │ 按板子筛选    │  │  │Hello   ││CoreMark││GPIO    │ │ │
-│  │              │  │  │入门    ││跑分    ││硬件    │ │ │
-│  │ ▶ Milk-V     │  │  └────────┘└────────┘└────────┘ │ │
-│  │   ▶ Duo      │  │                                     │ │
-│  │   ▶ Duo S    │  │  ┌────────┐┌────────┐           │ │
-│  │   ▶ Mars     │  │  │Dhrystone││...     │           │ │
-│  │ ▶ Sophgo     │  │  └────────┘└────────┘           │ │
-│  │ ▶ StarFive   │  │                                     │ │
-│  │ ▶ ...        │  │                                     │ │
-│  └──────────────┘  └────────────────────────────────────┘ │
+│  RuyiSDK Examples                                          │
+│  在 RISC-V 开发板上运行你的第一个程序                          │
+│                                                            │
+│  ┌─ 搜索框 ──────────────────────────────────────────────┐ │
+│  └───────────────────────────────────────────────────────┘ │
+│                                                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐    │
+│  │ Milk-V Duo S │  │ Lichee Pi 4A │  │ ...          │    │
+│  │ SG2000       │  │ TH1520       │  │              │    │
+│  │ Milk-V       │  │ Sipeed       │  │              │    │
+│  │ 4 个示例      │  │ 3 个示例      │  │              │    │
+│  └──────────────┘  └──────────────┘  └──────────────┘    │
 └────────────────────────────────────────────────────────────┘
 ```
 
-**左侧**：按板子树形筛选（Vendor → SoC → Board）  
-**右侧**：示例卡片网格  
-**顶部**：搜索框
+### 板子详情页：示例列表
 
-### 示例详情页
+```text
+┌────────────────────────────────────────────────────────────┐
+│  ← 返回首页    Milk-V Duo S                                │
+│  SG2000 · 512MB · Milk-V                                   │
+│                                                            │
+│  示例列表：                                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ HelloWorld          基础示例    2025-03-19          │   │
+│  │ Coremark            基础示例    2025-03-19          │   │
+│  │ Pico-8SEG-LED       外设示例    2025-03-19          │   │
+│  │ Pico-ePaper-2.13    外设示例    2025-03-19          │   │
+│  └─────────────────────────────────────────────────────┘   │
+└────────────────────────────────────────────────────────────┘
+```
 
-顶部元信息 + Markdown 正文渲染 + 底部「支持的板子」列表。
+### 示例详情页：Markdown 渲染
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│  ← 返回 Milk-V Duo S                                      │
+│                                                            │
+│  ┌─ Markdown 正文 ──────────────────────────────────────┐ │
+│  │ # RuyiSDK 基础示例                                    │ │
+│  │ ## Hello World (GCC)                                  │ │
+│  │ 创建并激活 ruyi 虚拟环境...                             │ │
+│  │ ```                                                   │ │
+│  │ ruyi venv ...                                         │ │
+│  │ ```                                                   │ │
+│  │ [截图]                                                │ │
+│  │ ...                                                   │ │
+│  └───────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────┘
+```
