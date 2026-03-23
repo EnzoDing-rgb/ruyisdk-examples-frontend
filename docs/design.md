@@ -124,8 +124,10 @@ Examples 站点与 matrix **无代码耦合**。若需导流，仅在 matrix 导
 
 ```text
 ruyisdk-examples-frontend/
-  design.md                      # 本文档
-  plan.md                        # 实施计划
+  docs/
+    design.md                    # 本文档
+    plan.md                      # 实施计划
+    learn.md                     # 前端学习计划
   test-doc/                      # 内容 submodule（板子→示例 Markdown）
   support-matrix-frontend/       # submodule，只读参考（不修改）
   src/
@@ -178,7 +180,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 **协作与 Git**（文档落盘、每 Phase 一次 commit 等）：见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**。
 
-**Phase 里程碑与任务**（脚手架 → 数据层 → 首页 → 详情页 → 视觉打磨 → 收尾）：见 **`plan.md`**，避免与本文重复。
+**Phase 里程碑与任务**（脚手架 → 数据层 → 首页 → 详情页 → 视觉打磨 → 收尾）：见 **`docs/plan.md`**，避免与本文重复。
 
 ---
 

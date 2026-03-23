@@ -1,11 +1,11 @@
 # RuyiSDK Examples — Agent 开发计划
 
-给 AI Agent 的可执行实施手册。**依据 `design.md`**，逐步构建独立站点。  
+给 AI Agent 的可执行实施手册。**依据 `docs/design.md`**，逐步构建独立站点。  
 约束：不修改 `support-matrix-frontend` 源码（submodule 只读参考）。
 
-**协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`design.md` §9 为开发/SSH 验收方式；各 Phase 细节以本文为准。
+**协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`docs/design.md` §9 为开发/SSH 验收方式；各 Phase 细节以本文为准。
 
-**进度快照**：Phase 1–4 功能已完成。内容模型为 **板子 → 示例**（`design.md` §4）。路由 `/`、`/boards/[board]/`、`/boards/[board]/[example]/` 全部 SSG 输出。已知问题：示例标题用 Markdown `#` 导致撞名；UI 粗糙。下一步为 **Phase 5**（视觉打磨 + Bug 修复，见 `design.md` §12 视觉规范）。
+**进度快照**：Phase 1–4 功能已完成。内容模型为 **板子 → 示例**（`docs/design.md` §4）。路由 `/`、`/boards/[board]/`、`/boards/[board]/[example]/` 全部 SSG 输出。已知问题：示例标题用 Markdown `#` 导致撞名；UI 粗糙。下一步为 **Phase 5**（视觉打磨 + Bug 修复，见 `docs/design.md` §12 视觉规范）。
 
 ---
 
@@ -39,7 +39,7 @@ type ExampleStatus = "basics" | "peripheral" | "others";
 type ExampleMeta = {
   boardSlug: string;     // 所属板子 slug
   slug: string;          // 示例目录名，如 "HelloWorld"
-  title: string;         // 优先用目录名（见 design.md §4 标题规则），fallback 到 # 标题
+  title: string;         // 优先用目录名（见 docs/design.md §4 标题规则），fallback 到 # 标题
   status: ExampleStatus; // basics / peripheral / others
   sys: string;           // "buildroot" / "revyos" 等
   lastUpdate?: string;   // "2025-03-19"
@@ -129,7 +129,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ## Phase 3: 首页（板子卡片网格）
 
-**目标**：首页渲染板子卡片 + 搜索框。参照 `design.md` §3 §11。
+**目标**：首页渲染板子卡片 + 搜索框。参照 `docs/design.md` §3 §11。
 
 1. 布局壳 `src/layouts/Layout.astro`：HTML head + 全局样式 + `<slot/>`
 2. `src/components/BoardCard.tsx`（React）：product 名、CPU、vendor、示例数量；点击跳转 `/boards/[slug]/`
@@ -161,7 +161,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ## Phase 5: 视觉打磨 + Bug 修复
 
-**目标**：修复已知问题，全面美化 UI，达到 matrix 站点同等品质。参照 `design.md` §12 视觉规范。
+**目标**：修复已知问题，全面美化 UI，达到 matrix 站点同等品质。参照 `docs/design.md` §12 视觉规范。
 
 ### 已知问题（必修）
 
@@ -170,7 +170,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ### 视觉打磨（必做）
 
-3. **去掉首页左侧 Sidebar**：板子只有 2–3 块时 Sidebar 显得空旷。改为纯卡片网格 + 顶部居中搜索（`design.md` §12）
+3. **去掉首页左侧 Sidebar**：板子只有 2–3 块时 Sidebar 显得空旷。改为纯卡片网格 + 顶部居中搜索（`docs/design.md` §12）
 4. **首页 hero 区**：大标题 + 副标题 + 居中搜索框，`py-12 sm:py-16`
 5. **板子卡片微动效**：`hover:shadow-md` + `hover:-translate-y-0.5 transition`
 6. **板子详情页**：面包屑 + header + 分割线 + 示例表格（目录名 + Badge + 日期），全行可点击
@@ -194,7 +194,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ---
 
-## 待定项（见 `design.md` §10）
+## 待定项（见 `docs/design.md` §10）
 
 域名/子域、正式内容仓库名、matrix 外链、Vendor 分组数据源。
 
@@ -204,7 +204,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 - [x] `pnpm build` 通过
 - [ ] Mac SSH 隧道 + Chrome `http://localhost:3000`：首页加载正常
-- [ ] 首页：板子卡片网格 + 搜索过滤（`design.md` §3 §11）
+- [ ] 首页：板子卡片网格 + 搜索过滤（`docs/design.md` §3 §11）
 - [ ] 点击板子卡片 → 板子详情页：显示示例列表
 - [ ] 点击示例 → 示例详情页：Markdown 正文渲染 + 图片 + 代码高亮
 - [ ] 未修改 `support-matrix-frontend` 源码
