@@ -3,9 +3,9 @@
 给 AI Agent 的可执行实施手册。**依据 `design.md`**，逐步构建独立站点。  
 约束：不修改 `support-matrix-frontend` 源码（submodule 只读参考）。
 
-**协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`design.md` §9 为人眼验收口径。
+**协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`design.md` §9 为开发/SSH 验收方式；各 Phase 细节以本文为准。
 
-**进度快照**：Phase 1 已交付。内容模型为 **板子 → 示例**（见 `design.md` §4）。**Phase 4（板子详情 + 示例 Markdown 详情）已实现**：路由 `/`、`/boards/[board]/`、`/boards/[board]/[example]/`；`src/lib/data.ts` 扫描 `test-doc/*/*/*.md`；`public/test-doc` 指向内容目录以提供图片；`renderMarkdown.ts`（remark-gfm + rehype-pretty-code）。首页为板子卡片（非「每板一条示例」的旧 UI）。
+**进度快照**：Phase 1–4 功能已完成。内容模型为 **板子 → 示例**（`design.md` §4）。路由 `/`、`/boards/[board]/`、`/boards/[board]/[example]/` 全部 SSG 输出。已知问题：示例标题用 Markdown `#` 导致撞名；UI 粗糙。下一步为 **Phase 5**（视觉打磨 + Bug 修复，见 `design.md` §12 视觉规范）。
 
 ---
 
@@ -39,7 +39,7 @@ type ExampleStatus = "basics" | "peripheral" | "others";
 type ExampleMeta = {
   boardSlug: string;     // 所属板子 slug
   slug: string;          // 示例目录名，如 "HelloWorld"
-  title: string;         // 从 Markdown 第一个 # 标题提取
+  title: string;         // 优先用目录名（见 design.md §4 标题规则），fallback 到 # 标题
   status: ExampleStatus; // basics / peripheral / others
   sys: string;           // "buildroot" / "revyos" 等
   lastUpdate?: string;   // "2025-03-19"
@@ -159,15 +159,36 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ---
 
-## Phase 5: 质量收尾 + 双语
+## Phase 5: 视觉打磨 + Bug 修复
+
+**目标**：修复已知问题，全面美化 UI，达到 matrix 站点同等品质。参照 `design.md` §12 视觉规范。
+
+### 已知问题（必修）
+
+1. **示例标题撞名**：板子详情页示例列表全显示「RuyiSDK 基础示例」，无法区分 HelloWorld vs Coremark。修复：`data.ts` 中 `title` 优先用**目录名**（`ex.slug`），不再从 Markdown `#` 提取
+2. **板子详情 README 标题重复**：header 已显示 `board.product`，README 正文第一行又是同名 `#` 标题。修复：渲染 README body 时若第一个 `#` 与 product 相同则跳过
+
+### 视觉打磨（必做）
+
+3. **去掉首页左侧 Sidebar**：板子只有 2–3 块时 Sidebar 显得空旷。改为纯卡片网格 + 顶部居中搜索（`design.md` §12）
+4. **首页 hero 区**：大标题 + 副标题 + 居中搜索框，`py-12 sm:py-16`
+5. **板子卡片微动效**：`hover:shadow-md` + `hover:-translate-y-0.5 transition`
+6. **板子详情页**：面包屑 + header + 分割线 + 示例表格（目录名 + Badge + 日期），全行可点击
+7. **示例详情页**：面包屑 + meta 区 + 分割线 + prose 排版；图片 `rounded-lg shadow-sm max-w-full`；代码块圆角 + 语言标签
+8. **全局**：页面 `max-w-6xl` 居中，统一间距 `px-4 sm:px-6`
+
+**验证**：`pnpm build` 通过；Mac Chrome 人眼确认首页板子卡片美观可辨、板子详情示例名正确、示例详情 Markdown 排版舒适。
+
+---
+
+## Phase 6: 质量收尾 + 双语
 
 **目标**：构建通过、视觉一致、可部署。
 
 1. `pnpm build` 无报错
-2. 全局样式检查：与 matrix 风格一致（字体、间距、配色）
-3. 双语：板子介绍 README / README_zh 切换；示例正文当前仅中文，预留英文接口
-4. 按需写 Playwright e2e：首页加载、搜索、板子详情、示例详情
-5. 可选 CI：GitHub Actions `pnpm install && pnpm build`
+2. 双语：板子介绍 README / README_zh 切换；示例正文当前仅中文，预留英文接口
+3. 按需写 Playwright e2e：首页加载、搜索、板子详情、示例详情
+4. 可选 CI：GitHub Actions `pnpm install && pnpm build`
 
 **验证**：`pnpm build` 退出码 0；Mac Chrome 通过 SSH 隧道人眼确认首页、板子详情、示例详情。
 

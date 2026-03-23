@@ -9,10 +9,8 @@
 | 考量 | 说明 |
 | --- | --- |
 | 不影响旧支持矩阵 | matrix 站点 **零改动** |
-| 独立快速上线 | 自主发版，初期例子少即可展示；与 RuyiSDK 发布窗口对齐 |
-| 「一起发版」≠ 架构耦合 | 版本号 / 发布节奏 / 对外口径一致即可，不要求同仓库 |
-| 后续随意改 | 无需跨模块协调，不阻塞矩阵评审 |
-| 长期演进 | 示例库偏展示与教程，未来可有独立发布周期 |
+| 独立快速上线 | 自主发版；与 RuyiSDK 发布节奏可对齐，**工程上不耦合** |
+| 演进 | 示例库独立发布与迭代 |
 
 ## 1. 这是什么？
 
@@ -26,27 +24,7 @@ RISC-V 开发板用户，**手里已有一块板子**，想在板子上跑程序
 
 ## 3. 用户进来能看到什么？（板子优先）
 
-开发者的出发点是「我手上有一块板子」，因此站点以**板子为入口**。
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                                                             │
-│   RuyiSDK Examples                                         │
-│   在 RISC-V 开发板上运行你的第一个程序                         │
-│                                                             │
-│   ┌──────────────┐  ┌──────────────┐                       │
-│   │ Milk-V Duo S │  │ Lichee Pi 4A │  ...                  │
-│   │ SG2000       │  │ TH1520       │                       │
-│   │ 4 个示例      │  │ 3 个示例      │                       │
-│   └──────────────┘  └──────────────┘                       │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**导航流程：**
-
-1. **首页看到板子卡片** → 点进去 → 看这块板子上能跑的所有示例列表
-2. **点一个示例** → 看到完整的 Markdown 教程（含图片、代码块）
+开发者的出发点是「我手上有一块板子」，站点以**板子为入口**：首页板子卡片 → 板子详情（示例列表）→ 示例 Markdown（含图、代码）。线框见 §11。
 
 ## 4. 内容仓库结构（test-doc 实际）
 
@@ -114,6 +92,10 @@ last_update: 2025-03-19
 - 通常为 `example_{ExampleName}_{BoardShort}.md`，但也有例外（如 `Licheepi4A_Dhrystone.md`）
 - 数据层扫描时取**每个示例子目录下的第一个 `.md` 文件**（排除 README）
 
+### 示例标题提取规则
+
+示例正文里 `#` 常为通用名（如「RuyiSDK 基础示例」），多示例会撞名。**列表与面包屑标题优先用示例子目录名**（`HelloWorld`、`Coremark`）；无目录名时再取 Markdown `#`。
+
 ## 5. 示例怎么分类？
 
 基于 frontmatter 中的 `status` 字段：
@@ -149,7 +131,7 @@ ruyisdk-examples-frontend/
   src/
     lib/data.ts                  # 数据层：扫描 test-doc，解析板子和示例
     components/BoardCard.tsx     # 板子卡片
-    components/ExampleList.tsx   # 板子详情内的示例列表
+    components/BoardsHome.tsx    # 首页（搜索 + 卡片）
     layouts/Layout.astro         # 顶栏 + slot
     pages/index.astro            # 首页：板子卡片网格
     pages/boards/[board].astro   # 板子详情：示例列表
@@ -176,8 +158,6 @@ ruyisdk-examples-frontend/
 | **shadcn/ui + Radix UI** | 组件库 |
 | **pnpm** | 包管理 |
 
-开发时可直接查看 `./support-matrix-frontend/src/` 下的组件、布局、i18n 写法作为参照。
-
 ## 8. 双语支持
 
 板子介绍：`README.md`（英文）+ `README_zh.md`（中文）。
@@ -196,49 +176,9 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 # 然后 Chrome 打开 http://localhost:3000
 ```
 
-**协作与 Git 约定**（文档必须落盘、每 Phase 一次 commit 等）：见仓库 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**。
+**协作与 Git**（文档落盘、每 Phase 一次 commit 等）：见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**。
 
-按 Phase 划分，每个 Phase 完成后 Agent 通知用户验收：
-
-### Phase 1：脚手架
-
-| | |
-| --- | --- |
-| **Agent 做什么** | 初始化 Astro 工程（React + Tailwind + TS + shadcn），添加 submodule，准备示例内容（submodule 或 mock），启动 dev server |
-| **是否需要人眼验收** | 是（快速确认） |
-| **你应该看到** | Chrome 打开 `http://localhost:3000`，页面能加载，显示一个占位标题。不白屏、不报错即可 |
-
-### Phase 2：数据层
-
-| | |
-| --- | --- |
-| **Agent 做什么** | 实现 `data.ts`（glob 扫描 test-doc，解析板子 README frontmatter + 示例 .md frontmatter），在页面上输出板子及其示例列表验证 |
-| **是否需要人眼验收** | 否 |
-| **说明** | 纯后端逻辑，Agent 自己在控制台验证数据正确即可。你无需操作 |
-
-### Phase 3：首页（板子卡片）
-
-| | |
-| --- | --- |
-| **Agent 做什么** | 首页渲染板子卡片网格 + 搜索框，每张卡片显示板子名、CPU、示例数量，点击跳转到板子详情页 |
-| **是否需要人眼验收** | **是（重点验收）** |
-| **你应该看到** | 打开 `http://localhost:3000`，看到板子卡片（Milk-V Duo S、Lichee Pi 4A 等），搜索框能过滤，点击卡片能跳转 |
-
-### Phase 4：板子详情页 + 示例详情页
-
-| | |
-| --- | --- |
-| **Agent 做什么** | 板子详情页列出该板子下所有示例；点击示例进入 Markdown 渲染页（含图片、代码高亮） |
-| **是否需要人眼验收** | **是（重点验收）** |
-| **你应该看到** | (1) 点击板子卡片 → 看到该板子的示例列表（HelloWorld、Coremark 等）；(2) 点击某个示例 → 看到完整 Markdown 正文渲染，代码块有语法高亮，图片正常显示 |
-
-### Phase 5：质量收尾 + 双语
-
-| | |
-| --- | --- |
-| **Agent 做什么** | `pnpm build` 确认构建通过，样式全局检查，双语切换（板子介绍 README/README_zh），按需写 e2e 测试 |
-| **是否需要人眼验收** | 是（最终验收） |
-| **你应该看到** | 完整走一遍：首页浏览 → 搜索 → 点板子卡片 → 看示例列表 → 点示例看 Markdown → 返回。所有环节无白屏、无错位、无 404。Agent 同时报告 `pnpm build` 退出码 0 |
+**Phase 里程碑与任务**（脚手架 → 数据层 → 首页 → 详情页 → 视觉打磨 → 收尾）：见 **`plan.md`**，避免与本文重复。
 
 ---
 
@@ -252,7 +192,9 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 | 示例是否关联上游代码仓库链接 | 待定 |
 | Vendor 分组数据源 | 待定（当前从 frontmatter vendor 字段聚合） |
 
-## 11. 页面布局
+## 11. 页面布局（线框）
+
+信息架构：**板子优先**——`/（首页）` → `/boards/{board}/（示例列表）` → `/boards/{board}/{example}/（Markdown）`。以下为各页 ASCII 线框，细部样式见 §12。
 
 ### 首页：板子卡片网格
 
@@ -277,8 +219,9 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│  ← 返回首页    Milk-V Duo S                                │
+│  首页 / Milk-V Duo S                                       │
 │  SG2000 · 512MB · Milk-V                                   │
+│  （README 简介区，prose）                                    │
 │                                                            │
 │  示例列表：                                                 │
 │  ┌─────────────────────────────────────────────────────┐   │
@@ -294,10 +237,11 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│  ← 返回 Milk-V Duo S                                      │
+│  首页 / Milk-V Duo S / HelloWorld                          │
+│  （meta：分类 · 系统 · 日期）                               │
 │                                                            │
 │  ┌─ Markdown 正文 ──────────────────────────────────────┐ │
-│  │ # RuyiSDK 基础示例                                    │ │
+│  │ # RuyiSDK 基础示例   ← 正文内标题可与列表标题不同      │ │
 │  │ ## Hello World (GCC)                                  │ │
 │  │ 创建并激活 ruyi 虚拟环境...                             │ │
 │  │ ```                                                   │ │
@@ -308,3 +252,39 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 │  └───────────────────────────────────────────────────────┘ │
 └────────────────────────────────────────────────────────────┘
 ```
+
+## 12. 视觉规范
+
+整体对标 [matrix.ruyisdk.org](https://matrix.ruyisdk.org/) 品质，在保持 shadcn/ui + Tailwind 语义色的基础上做如下细化。
+
+### 全局
+
+- 页面最大宽度 `max-w-6xl`（1152px），居中，两侧留 `px-4 sm:px-6`
+- 不再使用首页左侧「按板子」Sidebar（板子数量少时 Sidebar 显得空旷），改为纯卡片网格 + 顶部搜索
+- 背景色 `bg-background`；卡片 `bg-card`；统一使用 CSS 变量色，不硬编码
+- 字体：继承 matrix 的 `--font-sans`（Open Sans 或系统无衬线）
+
+### 首页
+
+- 顶部 hero 区：大标题 + 副标题 + 搜索框，垂直居中，`py-12 sm:py-16`
+- 搜索框宽度 `max-w-lg`，居中，带 `Search` 图标前缀
+- 板子卡片采用 `hover:shadow-md` + `hover:-translate-y-0.5` 微动效
+- 卡片内部：product 名加粗 `text-lg font-semibold`；CPU 和 vendor 用 `text-muted-foreground text-sm`；右上角 Badge 显示「N 个示例」
+- 无结果态：虚线边框 + 提示文案
+
+### 板子详情页
+
+- 面包屑：`首页 / {board.product}`，使用 `text-sm text-muted-foreground`
+- 板子 header：product 名 `text-2xl font-semibold`，下方一行 chip 信息 `cpu · ram · vendor`
+- 板子 README 介绍：用 `prose` 排版，若内容第一个标题与 header 重复则**跳过不渲染**
+- 示例列表用表格或分割线列表，每行显示：**目录名**（作为标题）+ 分类 Badge + 系统 + 日期；整行可点击，hover 高亮
+- 若示例数为 0，显示空态提示
+
+### 示例详情页
+
+- 面包屑：`首页 / {board.product} / {example.slug}`
+- 顶部 meta 区：板子名小字 + 示例目录名大标题 + 分类标签 + 系统 + 日期
+- Markdown 正文区：`prose prose-slate dark:prose-invert max-w-none`
+- 代码块：`rehype-pretty-code` + `github-dark` 主题，圆角 `rounded-lg`，带语言标签
+- 图片：`max-w-full rounded-lg shadow-sm`；限宽不拉伸
+- 正文区与 header 之间有分割线 `border-t` + `pt-8`
