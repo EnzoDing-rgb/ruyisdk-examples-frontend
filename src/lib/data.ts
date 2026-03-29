@@ -19,9 +19,30 @@ export type BoardMeta = {
   cpu: string;
   cpuCore?: string;
   ram?: string;
+  /** Board vendor (板厂)，如 Sipeed、Milk-V */
   vendor: string;
+  /** Silicon / chip IP vendor（芯片厂商），侧栏第一层分组用 */
+  socVendor?: string;
   examples: ExampleMeta[];
 };
+
+/** URL segment: lowercase, spaces → hyphens, strip unsafe chars */
+export function slugifyUrlSegment(s: string): string {
+  const t = s
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+  return t || "unknown";
+}
+
+export function siliconVendorSlug(b: BoardMeta): string {
+  return slugifyUrlSegment(b.socVendor ?? "Unknown");
+}
+
+export function socSlugFromCpu(cpu: string): string {
+  return slugifyUrlSegment(cpu || "Unknown");
+}
 
 const boardReadmeGlob = import.meta.glob("../../test-doc/*/README.md", {
   query: "?raw",
@@ -89,6 +110,10 @@ function buildBoardMeta(slug: string, readmeRaw: string, examples: ExampleMeta[]
     cpuCore: typeof data["cpu_core"] === "string" ? data["cpu_core"] : undefined,
     ram: typeof data["ram"] === "string" ? data["ram"] : undefined,
     vendor: typeof data["vendor"] === "string" ? data["vendor"] : "",
+    socVendor:
+      typeof data["soc_vendor"] === "string" && data["soc_vendor"].trim()
+        ? String(data["soc_vendor"]).trim()
+        : undefined,
     examples: examples.sort((a, b) => a.slug.localeCompare(b.slug)),
   };
 }
@@ -117,17 +142,20 @@ export type ChipGroup = {
   boards: BoardMeta[];
 };
 
-/** Vendor node: top-level grouping. */
-export type VendorGroup = {
-  vendor: string;
+/** @deprecated Use SiliconVendorGroup + groupBoardsBySiliconVendorChip */
+export type VendorGroup = SiliconVendorGroup;
+
+/** Top-level = 芯片厂商 (soc_vendor) */
+export type SiliconVendorGroup = {
+  siliconVendor: string;
   chips: ChipGroup[];
 };
 
-/** Build the vendor → chip → board tree from a flat board list. */
-export function groupBoardsByVendorChip(boards: BoardMeta[]): VendorGroup[] {
+/** Build 芯片厂商 → SoC(cpu) → board tree */
+export function groupBoardsBySiliconVendorChip(boards: BoardMeta[]): SiliconVendorGroup[] {
   const vendorMap = new Map<string, Map<string, BoardMeta[]>>();
   for (const b of boards) {
-    const v = b.vendor || "Other";
+    const v = b.socVendor ?? "Unknown";
     const c = b.cpu || "Unknown";
     if (!vendorMap.has(v)) vendorMap.set(v, new Map());
     const chipMap = vendorMap.get(v)!;
@@ -136,15 +164,68 @@ export function groupBoardsByVendorChip(boards: BoardMeta[]): VendorGroup[] {
   }
   return Array.from(vendorMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([vendor, chipMap]) => ({
-      vendor,
+    .map(([siliconVendor, chipMap]) => ({
+      siliconVendor,
       chips: Array.from(chipMap.entries())
         .sort(([a], [b]) => a.localeCompare(b))
-        .map(([cpu, boards]) => ({
+        .map(([cpu, bs]) => ({
           cpu,
-          boards: boards.sort((a, b) => a.product.localeCompare(b.product)),
+          boards: bs.sort((a, b) => a.product.localeCompare(b.product)),
         })),
     }));
+}
+
+/** Backward-compatible alias */
+export function groupBoardsByVendorChip(boards: BoardMeta[]): SiliconVendorGroup[] {
+  return groupBoardsBySiliconVendorChip(boards);
+}
+
+/** Home + sidebar search: product, slug, cpu, 板厂, 芯片厂商, cpu_core, ram */
+export function boardMatchesQuery(b: BoardMeta, q: string): boolean {
+  if (!q.trim()) return true;
+  const s = q.trim().toLowerCase();
+  const parts = [
+    b.product,
+    b.slug,
+    b.cpu,
+    b.vendor,
+    b.socVendor ?? "",
+    b.cpuCore ?? "",
+    b.ram ?? "",
+  ];
+  return parts.some((p) => p.toLowerCase().includes(s));
+}
+
+export function getBoardsForSiliconVendorUrlSlug(urlSlug: string): BoardMeta[] {
+  return getAllBoards().filter((b) => siliconVendorSlug(b) === urlSlug);
+}
+
+export function getBoardsForSocUrlSlug(urlSlug: string): BoardMeta[] {
+  return getAllBoards().filter((b) => socSlugFromCpu(b.cpu) === urlSlug);
+}
+
+export function getUniqueSiliconVendorUrlSlugs(): { slug: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const b of getAllBoards()) {
+    const label = b.socVendor ?? "Unknown";
+    const slug = siliconVendorSlug(b);
+    if (!seen.has(slug)) seen.set(slug, label);
+  }
+  return Array.from(seen.entries())
+    .map(([slug, label]) => ({ slug, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+export function getUniqueSocUrlSlugs(): { slug: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const b of getAllBoards()) {
+    const label = b.cpu || "Unknown";
+    const slug = socSlugFromCpu(b.cpu);
+    if (!seen.has(slug)) seen.set(slug, label);
+  }
+  return Array.from(seen.entries())
+    .map(([slug, label]) => ({ slug, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 let cacheBoards: BoardMeta[] | null = null;

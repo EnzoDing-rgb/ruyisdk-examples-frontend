@@ -5,7 +5,7 @@
 
 **协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`docs/design.md` §9 为开发/SSH 验收方式；各 Phase 细节以本文为准。
 
-**进度快照**：Phase 1–4 功能已完成。内容模型为 **板子 → 示例**（`docs/design.md` §4）。路由 `/`、`/boards/[board]/`、`/boards/[board]/[example]/` 全部 SSG 输出。已知问题：示例标题用 Markdown `#` 导致撞名；UI 粗糙。下一步为 **Phase 5**（视觉打磨 + Bug 修复，见 `docs/design.md` §12 视觉规范）。
+**进度快照**：Phase 1–4 已完成。**已实现（与 `docs/design.md` 对齐）**：`BoardMeta.socVendor`（`soc_vendor`）、侧栏 **桌面端** 可收起、第一层按 **芯片厂商** 分组；首页搜索含 `cpu_core`/`ram`/`soc_vendor` 等；板子详情 **dl 展示属性**；路由 **`/vendors/`、`/vendors/[vendor]/`、`/socs/`、`/socs/[soc]/`**（由 frontmatter 推导，不依赖三级目录）；面包屑链到厂商页与 SoC 页。**未做**：`test-doc` 三级目录与各级 `README.md` 的 glob 迁移（仍兼容当前「板子顶层」结构）。
 
 ---
 

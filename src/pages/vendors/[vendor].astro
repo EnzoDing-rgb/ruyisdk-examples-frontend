@@ -1,0 +1,72 @@
+---
+import type { GetStaticPaths } from "astro";
+
+import Layout from "../../layouts/Layout.astro";
+import {
+  getBoardsForSiliconVendorUrlSlug,
+  getUniqueSiliconVendorUrlSlugs,
+  groupBoardsBySiliconVendorChip,
+  socSlugFromCpu,
+} from "../../lib/data";
+
+export const getStaticPaths: GetStaticPaths = () =>
+  getUniqueSiliconVendorUrlSlugs().map(({ slug }) => ({ params: { vendor: slug } }));
+
+const vendorParam = Astro.params.vendor!;
+const boards = getBoardsForSiliconVendorUrlSlug(vendorParam);
+
+if (boards.length === 0) {
+  return Astro.redirect("/vendors/");
+}
+
+const label = boards[0]!.socVendor ?? "Unknown";
+const tree = groupBoardsBySiliconVendorChip(boards);
+const group = tree[0]!;
+---
+
+<Layout title={`${label} — 芯片厂商 — RuyiSDK Examples`}>
+  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <nav class="text-muted-foreground mb-6 text-sm">
+      <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
+      <span class="mx-1.5 select-none">/</span>
+      <a href="/vendors/" class="hover:text-foreground underline-offset-4 hover:underline">芯片厂商</a>
+      <span class="mx-1.5 select-none">/</span>
+      <span class="text-foreground font-medium">{label}</span>
+    </nav>
+
+    <header class="mb-10">
+      <h1 class="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">{label}</h1>
+      <p class="text-muted-foreground mt-1 text-sm">该芯片厂商下的 SoC 与开发板（来自内容库 frontmatter）</p>
+    </header>
+
+    <div class="space-y-10">
+      {
+        group.chips.map((cg) => (
+          <section>
+            <h2 class="text-foreground mb-3 text-lg font-semibold">
+              <a
+                href={`/socs/${encodeURIComponent(socSlugFromCpu(cg.cpu))}/`}
+                class="hover:text-primary underline-offset-4 hover:underline"
+              >
+                {cg.cpu}
+              </a>
+            </h2>
+            <ul class="divide-border divide-y rounded-xl border">
+              {cg.boards.map((b) => (
+                <li>
+                  <a
+                    href={`/boards/${encodeURIComponent(b.slug)}/`}
+                    class="hover:bg-muted/40 flex flex-wrap items-center justify-between gap-2 px-4 py-3 transition-colors"
+                  >
+                    <span class="text-foreground font-medium">{b.product}</span>
+                    <span class="text-muted-foreground text-sm">{b.vendor ? `板厂：${b.vendor}` : ""}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</Layout>

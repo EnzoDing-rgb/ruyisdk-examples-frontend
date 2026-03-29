@@ -1,52 +1,51 @@
 import { useMemo, useState } from "react";
 
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { BoardMeta, VendorGroup } from "@/lib/data";
-import { groupBoardsByVendorChip } from "@/lib/data";
+import type { BoardMeta, SiliconVendorGroup } from "@/lib/data";
+import {
+  boardMatchesQuery,
+  groupBoardsBySiliconVendorChip,
+  slugifyUrlSegment,
+  socSlugFromCpu,
+} from "@/lib/data";
 
 export type BoardSidebarProps = {
   boards: BoardMeta[];
+  /** 与首页主搜索框同步 */
+  searchQuery: string;
   className?: string;
 };
 
-export function BoardSidebar({ boards, className }: BoardSidebarProps) {
-  const [filter, setFilter] = useState("");
+export function BoardSidebar({ boards, searchQuery, className }: BoardSidebarProps) {
   const [expandedVendors, setExpandedVendors] = useState<Set<string>>(() =>
-    new Set(boards.map((b) => b.vendor || "Other")),
+    new Set(boards.map((b) => b.socVendor ?? "Unknown")),
   );
   const [expandedChips, setExpandedChips] = useState<Set<string>>(() =>
-    new Set(boards.map((b) => `${b.vendor || "Other"}::${b.cpu || "Unknown"}`)),
+    new Set(boards.map((b) => `${b.socVendor ?? "Unknown"}::${b.cpu || "Unknown"}`)),
   );
 
-  const tree: VendorGroup[] = useMemo(() => {
-    const all = groupBoardsByVendorChip(boards);
-    if (!filter.trim()) return all;
-    const q = filter.trim().toLowerCase();
+  const tree: SiliconVendorGroup[] = useMemo(() => {
+    const all = groupBoardsBySiliconVendorChip(boards);
+    const q = searchQuery.trim();
+    if (!q) return all;
     return all
       .map((vg) => ({
         ...vg,
         chips: vg.chips
           .map((cg) => ({
             ...cg,
-            boards: cg.boards.filter(
-              (b) =>
-                b.product.toLowerCase().includes(q) ||
-                b.cpu.toLowerCase().includes(q) ||
-                b.vendor.toLowerCase().includes(q) ||
-                b.slug.toLowerCase().includes(q),
-            ),
+            boards: cg.boards.filter((b) => boardMatchesQuery(b, q)),
           }))
           .filter((cg) => cg.boards.length > 0),
       }))
       .filter((vg) => vg.chips.length > 0);
-  }, [boards, filter]);
+  }, [boards, searchQuery]);
 
-  function toggleVendor(vendor: string) {
+  function toggleVendor(siliconVendor: string) {
     setExpandedVendors((prev) => {
       const next = new Set(prev);
-      if (next.has(vendor)) next.delete(vendor);
-      else next.add(vendor);
+      if (next.has(siliconVendor)) next.delete(siliconVendor);
+      else next.add(siliconVendor);
       return next;
     });
   }
@@ -67,52 +66,57 @@ export function BoardSidebar({ boards, className }: BoardSidebarProps) {
         className,
       )}
     >
-      <div className="p-4">
-        <Input
-          type="search"
-          placeholder="Search boards…"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="h-8 text-sm"
-          aria-label="Filter boards"
-        />
-      </div>
-
-      <nav className="px-2 pb-6">
+      <nav className="px-2 pb-6 pt-4">
         {tree.length === 0 && (
           <p className="text-muted-foreground px-3 py-4 text-center text-xs">无匹配</p>
         )}
 
         {tree.map((vg) => {
-          const vendorOpen = expandedVendors.has(vg.vendor);
+          const vendorOpen = expandedVendors.has(vg.siliconVendor);
+          const vendorHref = `/vendors/${encodeURIComponent(slugifyUrlSegment(vg.siliconVendor))}/`;
           return (
-            <div key={vg.vendor} className="mb-1">
-              {/* Vendor header */}
-              <button
-                type="button"
-                onClick={() => toggleVendor(vg.vendor)}
-                className="hover:bg-muted/60 flex w-full items-center justify-between rounded-md px-3 py-1.5 text-left transition-colors"
-              >
-                <span className="text-foreground text-sm font-semibold">{vg.vendor}</span>
-                <ChevronIcon open={vendorOpen} />
-              </button>
+            <div key={vg.siliconVendor} className="mb-1">
+              <div className="hover:bg-muted/60 flex w-full items-center justify-between rounded-md px-2 py-1.5">
+                <a
+                  href={vendorHref}
+                  className="text-foreground min-w-0 flex-1 truncate text-sm font-semibold underline-offset-4 hover:underline"
+                >
+                  {vg.siliconVendor}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => toggleVendor(vg.siliconVendor)}
+                  className="text-muted-foreground hover:text-foreground shrink-0 rounded p-0.5"
+                  aria-label={vendorOpen ? "折叠" : "展开"}
+                >
+                  <ChevronIcon open={vendorOpen} />
+                </button>
+              </div>
 
               {vendorOpen && (
                 <div className="ml-2">
                   {vg.chips.map((cg) => {
-                    const chipKey = `${vg.vendor}::${cg.cpu}`;
+                    const chipKey = `${vg.siliconVendor}::${cg.cpu}`;
                     const chipOpen = expandedChips.has(chipKey);
+                    const socHref = `/socs/${encodeURIComponent(socSlugFromCpu(cg.cpu))}/`;
                     return (
                       <div key={chipKey}>
-                        {/* Chip header */}
-                        <button
-                          type="button"
-                          onClick={() => toggleChip(chipKey)}
-                          className="hover:bg-muted/40 flex w-full items-center justify-between rounded-md px-3 py-1 text-left transition-colors"
-                        >
-                          <span className="text-muted-foreground text-sm">{cg.cpu}</span>
-                          <ChevronIcon open={chipOpen} />
-                        </button>
+                        <div className="hover:bg-muted/40 flex w-full items-center justify-between rounded-md px-2 py-1">
+                          <a
+                            href={socHref}
+                            className="text-muted-foreground min-w-0 flex-1 truncate text-sm underline-offset-4 hover:underline"
+                          >
+                            {cg.cpu}
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => toggleChip(chipKey)}
+                            className="text-muted-foreground hover:text-foreground shrink-0 rounded p-0.5"
+                            aria-label={chipOpen ? "折叠" : "展开"}
+                          >
+                            <ChevronIcon open={chipOpen} />
+                          </button>
+                        </div>
 
                         {chipOpen && (
                           <div className="ml-2">

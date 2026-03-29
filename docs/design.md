@@ -24,45 +24,67 @@ RISC-V 开发板用户，**手里已有一块板子**，想在板子上跑程序
 
 ## 3. 用户进来能看到什么？
 
-信息层级：**厂商 → 芯片 → 开发板 → 文档**。
+### 术语（和表格列的对应关系）
 
-首页左侧侧栏按此层级组织可折叠导航树，右侧为搜索框 + 板子卡片网格。点击板子进入详情页（示例列表），再点击示例进入 Markdown 渲染页。面包屑也体现完整层级。
+- **SoC**（System on Chip，片上系统）：**一颗芯片**里集成了 CPU、总线、外设控制器等，是「芯片型号」这一层。表里 **Soc** 列（如 `TH1520`、`SG2000`）指的就是这一层；站点里用 frontmatter 的 **`cpu`**（或后续与内容仓库对齐的 SoC 字段）与之对应。
+- **Silicon Vendor / 芯片厂商**（`soc_vendor`）：设计或销售这颗 SoC 的厂商（如 `XuanTie`、`Sophgo`）。**不等于**板卡品牌。
+- **Board / 开发板**：一块可买的板子（如 `Lichee Pi 4A`），用 **`product`** + 目录名区分。
+- **Board Vendor / 板厂**（`vendor`）：做这块板子的品牌（如 `Sipeed`、`Milk-V`）。与 `soc_vendor` **不是同一概念**：同一块 SoC 可以有多家板厂出不同的板。
 
-厂商和芯片**不设独立页面**，仅作为侧栏和面包屑中的分组层级。URL 保持扁平：`/boards/{board}/{example}/`。线框见 §11。
+**不等于关系**：`soc_vendor` ≠ 开发板；**SoC（芯片型号）** ≠ 开发板。开发板 = 板子硬件；SoC = 板子上的主芯片型号。
 
-## 4. 内容仓库结构（test-doc 实际）
+### 信息架构与 URL（已确认）
 
-内容仓库（当前 `DuoQilai/test-doc`）以**板子为顶层目录**，每块板子下有多个示例子目录：
+层级：**芯片厂商（soc_vendor）→ SoC（芯片型号）→ 开发板 → 示例文档**。
+
+| 页面 | URL 形态 | 说明 |
+| --- | --- | --- |
+| 芯片厂商 | `/vendors/{vendorSlug}/` | 列出该厂商下有哪些 SoC（及链到各 SoC 页） |
+| SoC | `/socs/{socSlug}/` | 列出该 SoC 下有哪些开发板 |
+| 开发板 | `/boards/{boardSlug}/` | 板子介绍 + 属性 + 示例列表 |
+| 示例 | `/boards/{boardSlug}/{exampleSlug}/` | Markdown 教程正文 |
+
+首页：桌面端左侧侧栏**永久展示**，且支持**收起**（仅桌面；移动端不要求常驻侧栏）。侧栏导航树**第一层按 `soc_vendor` 分组**（不按板厂 `vendor`）。主区仍为搜索 + 板子卡片网格。线框见 §11。
+
+**开发板详情页**同时展示 **`soc_vendor`（芯片厂商）与 `vendor`（板厂）** 等 frontmatter 属性，与协作方提供的表格（Silicon Vendor / Soc / Boards / Board Vendor）一致。
+
+## 4. 内容仓库结构（目标与迁移说明）
+
+### 目标目录约定（与 1.3 对齐）
+
+内容仓库中每一层都有**固定入口文件名 `README.md`（首字母大写）**：
 
 ```text
 test-doc/
-  Duo_S/                              # 板子目录
-    README.md                         # 板子介绍（英文，含 frontmatter）
-    README_zh.md                      # 板子介绍（中文）
-    others.yml                        # OS 兼容性数据
-    images/                           # 板子级别图片
-    HelloWorld/                       # 示例目录
-      example_HelloWorld_DuoS.md      # 示例正文
-      images/                         # 示例图片
-    Coremark/
-      example_Coremark_DuoS.md
-      images/
-    Pico-8SEG-LED/
-      example_Pico-8SEG-LED_DuoS.md
-      images/
-    Pico-ePaper-2.13/
-      example_Pico-ePaper-2.13_DuoS.md
-      images/
-  LicheePi4A/                         # 另一块板子
+  {SiliconVendorSlug}/           # 芯片厂商目录，如 XuanTie/
+    README.md                    # 厂商介绍（可选）
+    {SocSlug}/                   # SoC 目录，如 TH1520/
+      README.md                  # SoC 介绍（可选）
+      {BoardSlug}/               # 开发板目录，如 LicheePi4A/
+        README.md
+        README_zh.md
+        HelloWorld/
+          *.md
+        ...
+```
+
+**当前仓库**可能仍为旧结构（**板子为顶层目录**），迁移时把板子目录挪到 `厂商/SoC/板子/` 下，并补齐各级 `README.md`。数据层以 `docs/plan.md` 中 Phase 为准实现 glob 与 slug 规则。
+
+### 旧结构示意（迁移前参考）
+
+曾以**板子为顶层目录**，每块板子下有多个示例子目录：
+
+```text
+test-doc/
+  Duo_S/
     README.md
     README_zh.md
-    others.yml
     HelloWorld/
-      example_HelloWorld_LPi4A.md
-    Coremark/
-      example_Coremark_LPi4A.md
-    Dhrystone/
-      Licheepi4A_Dhrystone.md
+      example_HelloWorld_DuoS.md
+  LicheePi4A/
+    README.md
+    README_zh.md
+    ...
 ```
 
 ### 板子 README.md frontmatter
@@ -73,7 +95,8 @@ product: Milk-V Duo S
 cpu: SG2000
 cpu_core: XuanTie C906 + ARM Cortex-A53
 ram: 512MB
-vendor: Milk-V
+vendor: Milk-V              # 板厂（Board Vendor）
+soc_vendor: Sophgo          # 芯片厂商（Silicon Vendor），侧栏第一层分组用此字段
 ---
 ```
 
@@ -196,11 +219,21 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 | `ruyisdk/` 下正式内容仓库名称 | 待定 |
 | matrix 是否加「示例教程」外链 | 待定 |
 | 示例是否关联上游代码仓库链接 | 待定 |
-| Vendor 分组数据源 | 待定（当前从 frontmatter vendor 字段聚合） |
+
+**已确定**：侧栏第一层分组用 **`soc_vendor`**；开发板详情展示 **`vendor`（板厂）与 `soc_vendor`（芯片厂商）**；厂商 / SoC / 开发板 URL 分别为 `/vendors/…`、`/socs/…`、`/boards/…`；各级入口文件名为 **`README.md`**。
+
+## 10.1 仓库外协作流程（非本前端代码，仅供团队统一口径）
+
+1. **示例验证与文档存放（`riscv-board-custom-dev`）**  
+   开源 demo 的验证步骤仍用 **`git clone`** 拉代码；**验证说明文档**提交到 [DuoQilai/riscv-board-custom-dev](https://github.com/DuoQilai/riscv-board-custom-dev)。文档里写清命令与**终端 log** 作为运行结果，**不用截图代替 log**（便于复制、检索和 diff）。  
+   这一条约束的是**文档写法与验证习惯**，不是本站点必须自动执行 `git clone`。
+
+2. **包索引 issue 的提交位置**  
+   暂停向 **packages-index** 提 issue；需要登记「包名 + 上游仓库地址」时，改到 [ruyisdk/ruyi issues](https://github.com/ruyisdk/ruyi/issues) 提交，内容保持精简即可。
 
 ## 11. 页面布局（线框）
 
-信息层级：**厂商 → 芯片 → 开发板 → 文档**。URL 保持扁平：`/boards/{board}/{example}/`。厂商和芯片不设独立页面，仅在侧栏和面包屑中体现。细部样式见 §12。
+信息层级：**芯片厂商（soc_vendor）→ SoC → 开发板 → 示例**。厂商页、SoC 页为独立路由（见 §3 URL 表）；开发板与示例为 `/boards/...`。细部样式见 §12。
 
 ### 首页：侧栏（厂商→芯片→板子树）+ 卡片网格
 
@@ -208,15 +241,15 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 ┌──────────────┬─────────────────────────────────────────────┐
 │ [搜索框]      │  RuyiSDK Examples                           │
 │              │  在 RISC-V 开发板上运行你的第一个程序          │
-│ ▼ Milk-V     │  [搜索框]                                    │
+│ ▼ Sophgo     │  [搜索框]                                    │
 │   ▼ SG2000   │                                             │
 │     Duo S  4 │  ┌──────────────┐  ┌──────────────┐        │
-│ ▼ Sipeed     │  │ Milk-V Duo S │  │ Lichee Pi 4A │        │
+│ ▼ XuanTie    │  │ Milk-V Duo S │  │ Lichee Pi 4A │        │
 │   ▼ TH1520   │  │ SG2000·Milk-V│  │ TH1520·Sipeed│        │
 │     LPi4A  3 │  │ 4 个示例      │  │ 3 个示例      │        │
 │              │  └──────────────┘  └──────────────┘        │
 └──────────────┴─────────────────────────────────────────────┘
-  （移动端隐藏侧栏，仅保留搜索 + 卡片网格）
+  （移动端：侧栏可不常驻；桌面端：侧栏常驻且可收起）
 ```
 
 ### 板子详情页：示例列表
@@ -264,7 +297,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 ### 全局
 
 - 页面最大宽度 `max-w-6xl`（1152px），居中，两侧留 `px-4 sm:px-6`
-- 首页左侧侧栏：**厂商 → 芯片 → 板子**可折叠树，带搜索框，`w-64`，桌面端显示，移动端隐藏
+- 首页左侧侧栏：**soc_vendor → SoC（cpu）→ 板子**可折叠树，带搜索框，`w-64`；**仅桌面端**常驻并支持收起；移动端可不显示侧栏
 - 背景色 `bg-background`；卡片 `bg-card`；统一使用 CSS 变量色，不硬编码
 - 字体：继承 matrix 的 `--font-sans`（Open Sans 或系统无衬线）
 
@@ -278,8 +311,8 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 ### 板子详情页
 
-- 面包屑：`首页 / {vendor} / {cpu} / {board.product}`，使用 `text-sm text-muted-foreground`
-- 板子 header：product 名 `text-2xl font-semibold`，下方一行 chip 信息 `cpu · ram · vendor`
+- 面包屑：与 §3 URL 一致，含芯片厂商与 SoC（具体链到 `/vendors/…`、`/socs/…` 待实现时对齐），使用 `text-sm text-muted-foreground`
+- 板子 header：product 名 `text-2xl font-semibold`；属性区展示 frontmatter：**含 `soc_vendor`、`vendor`（板厂）、`cpu`（SoC）、`cpu_core`、`ram` 等**，便于对照协作表格
 - 板子 README 介绍：用 `prose` 排版，若内容第一个标题与 header 重复则**跳过不渲染**
 - 示例列表用表格或分割线列表，每行显示：**目录名**（作为标题）+ 分类 Badge + 系统 + 日期；整行可点击，hover 高亮
 - 若示例数为 0，显示空态提示

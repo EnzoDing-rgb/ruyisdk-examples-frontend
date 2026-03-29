@@ -12,11 +12,21 @@ export type BoardCardProps = {
   slug: string;
   cpu: string;
   vendor: string;
+  /** 芯片厂商（可选） */
+  socVendor?: string;
   exampleCount: number;
   className?: string;
 };
 
-export function BoardCard({ product, slug, cpu, vendor, exampleCount, className }: BoardCardProps) {
+export function BoardCard({
+  product,
+  slug,
+  cpu,
+  vendor,
+  socVendor,
+  exampleCount,
+  className,
+}: BoardCardProps) {
   const href = `/boards/${encodeURIComponent(slug)}/`;
 
   return (
@@ -39,6 +49,7 @@ export function BoardCard({ product, slug, cpu, vendor, exampleCount, className 
         <CardContent className="pt-0">
           <p className="text-muted-foreground text-sm">
             {cpu || "—"}
+            {socVendor ? ` · ${socVendor}` : ""}
             {vendor ? ` · ${vendor}` : ""}
           </p>
         </CardContent>

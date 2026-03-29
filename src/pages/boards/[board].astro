@@ -2,7 +2,14 @@
 import type { GetStaticPaths } from "astro";
 
 import Layout from "../../layouts/Layout.astro";
-import { getAllBoards, getBoardBySlug, getBoardReadmeBody, stripDuplicateHeading } from "../../lib/data";
+import {
+  getAllBoards,
+  getBoardBySlug,
+  getBoardReadmeBody,
+  slugifyUrlSegment,
+  socSlugFromCpu,
+  stripDuplicateHeading,
+} from "../../lib/data";
 import { renderMarkdownToHtml } from "../../lib/renderMarkdown";
 import { STATUS_LABEL_ZH } from "../../lib/status-labels";
 
@@ -19,37 +26,73 @@ if (!board) {
 const rawIntroMd = getBoardReadmeBody(board.slug, "zh") ?? "";
 const introMd = rawIntroMd ? stripDuplicateHeading(rawIntroMd, board.product) : "";
 const introHtml = introMd ? await renderMarkdownToHtml(introMd) : "";
+
+const sv = board.socVendor ?? "Unknown";
+const svSlug = slugifyUrlSegment(sv);
+const socSlug = socSlugFromCpu(board.cpu);
 ---
 
 <Layout title={`${board.product} — RuyiSDK Examples`}>
   <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <!-- Breadcrumb: 首页 / 厂商 / 芯片 / 板子 -->
-    <nav class="text-muted-foreground mb-6 text-sm">
+    <!-- Breadcrumb: 首页 / 芯片厂商 / SoC / 板子 -->
+    <nav class="text-muted-foreground mb-6 flex flex-wrap items-center gap-x-1.5 text-sm">
       <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      {board.vendor && (
-        <>
-          <span class="mx-1.5 select-none">/</span>
-          <span>{board.vendor}</span>
-        </>
-      )}
+      <span class="select-none">/</span>
+      <a href={`/vendors/${encodeURIComponent(svSlug)}/`} class="hover:text-foreground underline-offset-4 hover:underline">
+        {sv}
+      </a>
       {board.cpu && (
         <>
-          <span class="mx-1.5 select-none">/</span>
-          <span>{board.cpu}</span>
+          <span class="select-none">/</span>
+          <a
+            href={`/socs/${encodeURIComponent(socSlug)}/`}
+            class="hover:text-foreground underline-offset-4 hover:underline"
+          >
+            {board.cpu}
+          </a>
         </>
       )}
-      <span class="mx-1.5 select-none">/</span>
+      <span class="select-none">/</span>
       <span class="text-foreground font-medium">{board.product}</span>
     </nav>
 
-    <!-- Board header -->
+    <!-- Board header + 属性（与 frontmatter 对齐） -->
     <header class="mb-8">
       <h1 class="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">{board.product}</h1>
-      <p class="text-muted-foreground mt-1 text-sm">
-        {board.cpu}
-        {board.ram ? ` · ${board.ram}` : ""}
-        {board.vendor ? ` · ${board.vendor}` : ""}
-      </p>
+      <dl class="text-muted-foreground mt-4 grid max-w-xl gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">product</dt>
+          <dd class="text-foreground">{board.product}</dd>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">cpu（SoC）</dt>
+          <dd class="text-foreground">{board.cpu || "—"}</dd>
+        </div>
+        {
+          board.cpuCore && (
+            <div class="flex flex-col gap-0.5 sm:col-span-2">
+              <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">cpu_core</dt>
+              <dd class="text-foreground">{board.cpuCore}</dd>
+            </div>
+          )
+        }
+        {
+          board.ram && (
+            <div class="flex flex-col gap-0.5">
+              <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">ram</dt>
+              <dd class="text-foreground">{board.ram}</dd>
+            </div>
+          )
+        }
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">vendor（板厂）</dt>
+          <dd class="text-foreground">{board.vendor || "—"}</dd>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">soc_vendor</dt>
+          <dd class="text-foreground">{board.socVendor ?? "—"}</dd>
+        </div>
+      </dl>
     </header>
 
     <!-- README intro -->
