@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import { SiteSidebar } from "../components/SiteSidebar";
+import { getAllBoards } from "../lib/data";
 
 interface Props {
   title?: string;
@@ -7,6 +9,7 @@ interface Props {
 }
 
 const { title = "RuyiSDK Examples", description = "RISC-V 开发板示例教程" } = Astro.props;
+const boards = getAllBoards();
 ---
 
 <!doctype html>
@@ -21,6 +24,11 @@ const { title = "RuyiSDK Examples", description = "RISC-V 开发板示例教程"
     <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <div class="mx-auto flex max-w-7xl">
+      <SiteSidebar client:load boards={boards} />
+      <main class="min-w-0 flex-1 px-4 sm:px-6">
+        <slot />
+      </main>
+    </div>
   </body>
 </html>

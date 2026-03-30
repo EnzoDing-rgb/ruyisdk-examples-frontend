@@ -107,6 +107,7 @@ function buildBoardMeta(slug: string, readmeRaw: string, examples: ExampleMeta[]
     (typeof data["product"] === "string" && data["product"]) ||
     firstHeading(body) ||
     slug;
+  const siliconVendorRaw = data["silicon_vendor"] ?? data["soc_vendor"];
   return {
     slug,
     product,
@@ -115,8 +116,8 @@ function buildBoardMeta(slug: string, readmeRaw: string, examples: ExampleMeta[]
     ram: typeof data["ram"] === "string" ? data["ram"] : undefined,
     vendor: typeof data["vendor"] === "string" ? data["vendor"] : "",
     socVendor:
-      typeof data["soc_vendor"] === "string" && data["soc_vendor"].trim()
-        ? String(data["soc_vendor"]).trim()
+      typeof siliconVendorRaw === "string" && siliconVendorRaw.trim()
+        ? String(siliconVendorRaw).trim()
         : undefined,
     examples: examples.sort((a, b) => a.slug.localeCompare(b.slug)),
   };

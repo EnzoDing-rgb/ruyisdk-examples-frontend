@@ -1,32 +1,8 @@
 ---
+// 需求：点击 SoC 也显示芯片厂商页面（SoC 专页不再提供）
 import Layout from "../../layouts/Layout.astro";
-import { getUniqueSocUrlSlugs } from "../../lib/data";
-
-const socs = getUniqueSocUrlSlugs();
 ---
 
 <Layout title="SoC — RuyiSDK Examples">
-  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <nav class="text-muted-foreground mb-6 text-sm">
-      <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      <span class="mx-1.5 select-none">/</span>
-      <span class="text-foreground font-medium">SoC</span>
-    </nav>
-    <h1 class="text-foreground mb-2 text-2xl font-semibold tracking-tight">SoC（芯片型号）</h1>
-    <p class="text-muted-foreground mb-8 text-sm">按 cpu 字段浏览</p>
-    <ul class="divide-border divide-y rounded-xl border">
-      {
-        socs.map((s) => (
-          <li>
-            <a
-              href={`/socs/${encodeURIComponent(s.slug)}/`}
-              class="hover:bg-muted/40 block px-4 py-3 text-base font-medium transition-colors"
-            >
-              {s.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
+  {Astro.redirect("/vendors/")}
 </Layout>

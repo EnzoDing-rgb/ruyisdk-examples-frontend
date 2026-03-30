@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from "astro";
 
 import Layout from "../../layouts/Layout.astro";
-import { getBoardsForSocUrlSlug, getUniqueSocUrlSlugs } from "../../lib/data";
+import { getBoardsForSocUrlSlug, getUniqueSocUrlSlugs, slugifyUrlSegment } from "../../lib/data";
 
 export const getStaticPaths: GetStaticPaths = () =>
   getUniqueSocUrlSlugs().map(({ slug }) => ({ params: { soc: slug } }));
@@ -11,46 +11,14 @@ const socParam = Astro.params.soc!;
 const boards = getBoardsForSocUrlSlug(socParam);
 
 if (boards.length === 0) {
-  return Astro.redirect("/socs/");
+  return Astro.redirect("/vendors/");
 }
 
-const cpuLabel = boards[0]!.cpu || "Unknown";
-const sorted = [...boards].sort((a, b) => a.product.localeCompare(b.product));
+// 需求：点击 SoC 也显示芯片厂商页面
+const sv = boards[0]!.socVendor ?? "Unknown";
+const svSlug = slugifyUrlSegment(sv);
 ---
 
-<Layout title={`${cpuLabel} — SoC — RuyiSDK Examples`}>
-  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <nav class="text-muted-foreground mb-6 text-sm">
-      <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      <span class="mx-1.5 select-none">/</span>
-      <a href="/socs/" class="hover:text-foreground underline-offset-4 hover:underline">SoC</a>
-      <span class="mx-1.5 select-none">/</span>
-      <span class="text-foreground font-medium">{cpuLabel}</span>
-    </nav>
-
-    <header class="mb-10">
-      <h1 class="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">{cpuLabel}</h1>
-      <p class="text-muted-foreground mt-1 text-sm">使用该 SoC 的开发板</p>
-    </header>
-
-    <ul class="divide-border divide-y rounded-xl border">
-      {
-        sorted.map((b) => (
-          <li>
-            <a
-              href={`/boards/${encodeURIComponent(b.slug)}/`}
-              class="hover:bg-muted/40 flex flex-col gap-1 px-4 py-3 transition-colors sm:flex-row sm:items-center sm:justify-between"
-            >
-              <span class="text-foreground font-medium">{b.product}</span>
-              <span class="text-muted-foreground text-sm">
-                {b.socVendor ? `${b.socVendor}` : ""}
-                {b.socVendor && b.vendor ? " · " : ""}
-                {b.vendor ? `${b.vendor}` : ""}
-              </span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
+<Layout title={`${sv} — 芯片厂商 — RuyiSDK Examples`}>
+  {Astro.redirect(`/vendors/${encodeURIComponent(svSlug)}/`)}
 </Layout>

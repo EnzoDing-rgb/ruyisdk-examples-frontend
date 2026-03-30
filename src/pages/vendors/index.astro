@@ -6,14 +6,9 @@ const vendors = getUniqueSiliconVendorUrlSlugs();
 ---
 
 <Layout title="芯片厂商 — RuyiSDK Examples">
-  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <nav class="text-muted-foreground mb-6 text-sm">
-      <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      <span class="mx-1.5 select-none">/</span>
-      <span class="text-foreground font-medium">芯片厂商</span>
-    </nav>
+  <div class="py-8">
     <h1 class="text-foreground mb-2 text-2xl font-semibold tracking-tight">芯片厂商</h1>
-    <p class="text-muted-foreground mb-8 text-sm">按 Silicon Vendor（soc_vendor）浏览</p>
+    <p class="text-muted-foreground mb-8 text-sm">按 Silicon Vendor（silicon_vendor）浏览</p>
     <ul class="divide-border divide-y rounded-xl border">
       {
         vendors.map((v) => (

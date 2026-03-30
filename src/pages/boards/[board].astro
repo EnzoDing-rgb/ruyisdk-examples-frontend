@@ -33,29 +33,7 @@ const socSlug = socSlugFromCpu(board.cpu);
 ---
 
 <Layout title={`${board.product} — RuyiSDK Examples`}>
-  <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-    <!-- Breadcrumb: 首页 / 芯片厂商 / SoC / 板子 -->
-    <nav class="text-muted-foreground mb-6 flex flex-wrap items-center gap-x-1.5 text-sm">
-      <a href="/" class="hover:text-foreground underline-offset-4 hover:underline">首页</a>
-      <span class="select-none">/</span>
-      <a href={`/vendors/${encodeURIComponent(svSlug)}/`} class="hover:text-foreground underline-offset-4 hover:underline">
-        {sv}
-      </a>
-      {board.cpu && (
-        <>
-          <span class="select-none">/</span>
-          <a
-            href={`/socs/${encodeURIComponent(socSlug)}/`}
-            class="hover:text-foreground underline-offset-4 hover:underline"
-          >
-            {board.cpu}
-          </a>
-        </>
-      )}
-      <span class="select-none">/</span>
-      <span class="text-foreground font-medium">{board.product}</span>
-    </nav>
-
+  <div class="py-8">
     <!-- Board header + 属性（与 frontmatter 对齐） -->
     <header class="mb-8">
       <h1 class="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">{board.product}</h1>
@@ -65,7 +43,7 @@ const socSlug = socSlugFromCpu(board.cpu);
           <dd class="text-foreground">{board.product}</dd>
         </div>
         <div class="flex flex-col gap-0.5">
-          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">cpu（SoC）</dt>
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">SoC</dt>
           <dd class="text-foreground">{board.cpu || "—"}</dd>
         </div>
         {
@@ -85,11 +63,11 @@ const socSlug = socSlugFromCpu(board.cpu);
           )
         }
         <div class="flex flex-col gap-0.5">
-          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">vendor（板厂）</dt>
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">Board_Vendor</dt>
           <dd class="text-foreground">{board.vendor || "—"}</dd>
         </div>
         <div class="flex flex-col gap-0.5">
-          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">soc_vendor</dt>
+          <dt class="text-muted-foreground/80 text-xs font-medium uppercase tracking-wide">Silicon_Vendor</dt>
           <dd class="text-foreground">{board.socVendor ?? "—"}</dd>
         </div>
       </dl>
