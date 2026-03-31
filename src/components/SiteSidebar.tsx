@@ -63,19 +63,44 @@ export function SiteSidebar({ boards, className }: SiteSidebarProps) {
       )}
     >
       <div className={cn("flex h-full w-full flex-col", collapsed && "items-center")}>
-        <div className={cn("border-border flex items-center gap-2 border-b p-3", collapsed && "flex-col p-2")}>
-          <a
-            href="/"
-            className={cn(
-              "hover:bg-muted/60 flex min-w-0 items-center gap-2 rounded-md px-2 py-1 transition-colors",
-              collapsed && "px-1",
-            )}
-            aria-label="回到首页"
-            title="回到首页"
-          >
-            <img src="/ruyi-logo-256.png" alt="RuyiSDK" className={cn("h-6 w-6 shrink-0", collapsed && "h-7 w-7")} />
-            {!collapsed && <span className="text-foreground truncate text-sm font-semibold">RuyiSDK Examples</span>}
-          </a>
+        <div
+          className={cn(
+            "border-border flex w-full flex-col gap-2 border-b p-3",
+            collapsed && "items-center p-2",
+          )}
+        >
+          <div className={cn("flex w-full items-center gap-2", collapsed && "flex-col")}>
+            <a
+              href="/"
+              className={cn(
+                "hover:bg-muted/60 flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 transition-colors",
+                collapsed && "w-full justify-center px-1",
+              )}
+              aria-label="回到首页"
+              title="回到首页"
+            >
+              <img
+                src="/ruyi-logo-256.png"
+                alt="RuyiSDK"
+                className={cn("h-6 w-6 shrink-0", collapsed && "h-7 w-7")}
+              />
+              {!collapsed && <span className="text-foreground truncate text-sm font-semibold">RuyiSDK Examples</span>}
+            </a>
+
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              className={cn(
+                "text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm transition-colors",
+                collapsed && "h-9 w-9",
+              )}
+              aria-expanded={!collapsed}
+              aria-label={collapsed ? "展开侧栏" : "收起侧栏"}
+              title={collapsed ? "展开侧栏" : "收起侧栏"}
+            >
+              {collapsed ? "›" : "‹"}
+            </button>
+          </div>
 
           {!collapsed && (
             <Input
@@ -87,19 +112,6 @@ export function SiteSidebar({ boards, className }: SiteSidebarProps) {
               aria-label="搜索"
             />
           )}
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className={cn(
-              "text-muted-foreground hover:text-foreground hover:bg-muted/60 inline-flex h-8 w-8 items-center justify-center rounded-md text-sm transition-colors",
-              collapsed && "h-9 w-9",
-            )}
-            aria-expanded={!collapsed}
-            aria-label={collapsed ? "展开侧栏" : "收起侧栏"}
-            title={collapsed ? "展开侧栏" : "收起侧栏"}
-          >
-            {collapsed ? "›" : "‹"}
-          </button>
         </div>
 
         {!collapsed && (
