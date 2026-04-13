@@ -45,17 +45,15 @@ export function socSlugFromCpu(cpu: string): string {
 }
 
 // Content repo layout compatibility:
-// - legacy: test-doc/{Board}/README.md, test-doc/{Board}/{Example}/*.md
-// - new:    test-doc/boards/{Board}/README.md, test-doc/boards/{Board}/{Example}/*.md
-//
-// We keep the local folder name `test-doc/` stable and just adapt globs.
-const boardReadmeGlobLegacy = import.meta.glob("../../test-doc/*/README.md", {
+// - legacy: board-docs/{Board}/README.md, board-docs/{Board}/{Example}/*.md
+// - new:    board-docs/boards/{Board}/README.md, board-docs/boards/{Board}/{Example}/*.md
+const boardReadmeGlobLegacy = import.meta.glob("../../board-docs/*/README.md", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>;
 
-const boardReadmeGlobBoards = import.meta.glob("../../test-doc/boards/*/README.md", {
+const boardReadmeGlobBoards = import.meta.glob("../../board-docs/boards/*/README.md", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -66,13 +64,13 @@ const boardReadmeGlob: Record<string, string> = {
   ...boardReadmeGlobBoards,
 };
 
-const exampleMdGlobLegacy = import.meta.glob("../../test-doc/*/*/*.md", {
+const exampleMdGlobLegacy = import.meta.glob("../../board-docs/*/*/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>;
 
-const exampleMdGlobBoards = import.meta.glob("../../test-doc/boards/*/*/*.md", {
+const exampleMdGlobBoards = import.meta.glob("../../board-docs/boards/*/*/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -111,9 +109,9 @@ function normalizeStatus(raw: unknown): ExampleStatus {
 function parseBoardSlugFromReadmeKey(key: string): string | null {
   const norm = key.replace(/\\/g, "/");
   // Support both:
-  // - test-doc/{board}/README.md
-  // - test-doc/boards/{board}/README.md
-  const m = norm.match(/test-doc\/(?:boards\/)?([^/]+)\/README\.md$/);
+  // - board-docs/{board}/README.md
+  // - board-docs/boards/{board}/README.md
+  const m = norm.match(/board-docs\/(?:boards\/)?([^/]+)\/README\.md$/);
   const slug = m?.[1] ?? null;
   if (!slug) return null;
   // Never treat templates as a board.
@@ -124,9 +122,9 @@ function parseBoardSlugFromReadmeKey(key: string): string | null {
 function parseExamplePath(key: string): { board: string; example: string } | null {
   const norm = key.replace(/\\/g, "/");
   // Support both:
-  // - test-doc/{board}/{example}/{file}.md
-  // - test-doc/boards/{board}/{example}/{file}.md
-  const m = norm.match(/test-doc\/(?:boards\/)?([^/]+)\/([^/]+)\/([^/]+\.md)$/);
+  // - board-docs/{board}/{example}/{file}.md
+  // - board-docs/boards/{board}/{example}/{file}.md
+  const m = norm.match(/board-docs\/(?:boards\/)?([^/]+)\/([^/]+)\/([^/]+\.md)$/);
   if (!m) return null;
   const board = m[1];
   const example = m[2];
@@ -339,25 +337,25 @@ export function getExampleMeta(
   return b?.examples.find((e) => e.slug === exampleSlug);
 }
 
-/** Example doc: `./images/x` → `/test-doc/{board}/{example}/images/x` */
+/** Example doc: `./images/x` → `/board-docs/{board}/{example}/images/x` */
 export function rewriteExampleMediaPaths(
   markdown: string,
   boardSlug: string,
   exampleSlug: string,
 ): string {
-  return markdown.replace(/\]\(\.\/([^)]+)\)/g, `](/test-doc/${boardSlug}/${exampleSlug}/$1)`);
+  return markdown.replace(/\]\(\.\/([^)]+)\)/g, `](/board-docs/${boardSlug}/${exampleSlug}/$1)`);
 }
 
-/** Board README: `./images/x` → `/test-doc/{board}/images/x` */
+/** Board README: `./images/x` → `/board-docs/{board}/images/x` */
 export function rewriteBoardReadmeMediaPaths(markdown: string, boardSlug: string): string {
-  return markdown.replace(/\]\(\.\/([^)]+)\)/g, `](/test-doc/${boardSlug}/$1)`);
+  return markdown.replace(/\]\(\.\/([^)]+)\)/g, `](/board-docs/${boardSlug}/$1)`);
 }
 
 function getRawByGlobKey(key: string): string | undefined {
   return exampleMdGlob[key];
 }
 
-/** Markdown body (no frontmatter), with media paths fixed for /test-doc */
+/** Markdown body (no frontmatter), with media paths fixed for /board-docs */
 export function getExampleMarkdownBody(boardSlug: string, exampleSlug: string): string | undefined {
   const ex = getExampleMeta(boardSlug, exampleSlug);
   if (!ex) return undefined;
@@ -367,13 +365,13 @@ export function getExampleMarkdownBody(boardSlug: string, exampleSlug: string): 
   return rewriteExampleMediaPaths(body, boardSlug, exampleSlug);
 }
 
-const readmeZhGlobLegacy = import.meta.glob("../../test-doc/*/README_zh.md", {
+const readmeZhGlobLegacy = import.meta.glob("../../board-docs/*/README_zh.md", {
   query: "?raw",
   import: "default",
   eager: true,
 }) as Record<string, string>;
 
-const readmeZhGlobBoards = import.meta.glob("../../test-doc/boards/*/README_zh.md", {
+const readmeZhGlobBoards = import.meta.glob("../../board-docs/boards/*/README_zh.md", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -386,7 +384,7 @@ const readmeZhGlob: Record<string, string> = {
 
 function boardReadmeKey(slug: string, kind: "en" | "zh"): string | undefined {
   const name = kind === "zh" ? "README_zh.md" : "README.md";
-  const suffix = `test-doc/${slug}/${name}`;
+  const suffix = `board-docs/${slug}/${name}`;
   return Object.keys(kind === "zh" ? readmeZhGlob : boardReadmeGlob).find((k) =>
     k.replace(/\\/g, "/").includes(suffix),
   );

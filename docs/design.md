@@ -55,7 +55,7 @@ RISC-V 开发板用户，**手里已有一块板子**，想在板子上跑程序
 内容仓库中每一层都有**固定入口文件名 `README.md`（首字母大写）**：
 
 ```text
-test-doc/
+board-docs/
   {SiliconVendorSlug}/           # 芯片厂商目录，如 XuanTie/
     README.md                    # 厂商介绍（可选）
     {SocSlug}/                   # SoC 目录，如 TH1520/
@@ -75,7 +75,7 @@ test-doc/
 曾以**板子为顶层目录**，每块板子下有多个示例子目录：
 
 ```text
-test-doc/
+board-docs/
   Duo_S/
     README.md
     README_zh.md
@@ -156,10 +156,10 @@ ruyisdk-examples-frontend/
     design.md                    # 本文档
     plan.md                      # 实施计划
     learn.md                     # 前端学习计划
-  test-doc/                      # 内容 submodule（板子→示例 Markdown）
+  board-docs/                    # 内容 submodule（板子→示例 Markdown）
   support-matrix-frontend/       # submodule，只读参考（不修改）
   src/
-    lib/data.ts                  # 数据层：扫描 test-doc，解析板子和示例
+    lib/data.ts                  # 数据层：扫描 board-docs，解析板子和示例
     components/BoardCard.tsx     # 板子卡片
     components/BoardsHome.tsx    # 首页（搜索 + 卡片）
     layouts/Layout.astro         # 顶栏 + slot
@@ -174,7 +174,7 @@ ruyisdk-examples-frontend/
 | 仓库 | 职责 |
 | --- | --- |
 | **本仓库**（`ruyisdk-examples-frontend`） | 示例站点前端：页面、路由、构建与部署 |
-| **示例内容仓库**（当前 `DuoQilai/test-doc`，日后可迁 `ruyisdk/*`） | Markdown、图、元数据；独立版本与 PR |
+| **示例内容仓库**（当前 `ruyisdk/board-docs`；本地挂载为 `board-docs/` 子模块目录） | Markdown、图、元数据；独立版本与 PR |
 | **support-matrix-frontend**（submodule，只读参考） | 参照其组件、配置、样式写法；不运行、不修改 |
 
 ### 技术栈（复用 support-matrix-frontend）

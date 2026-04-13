@@ -5,17 +5,17 @@
 
 **协作与 Git**：文档落盘、每个 Phase 结束一次 commit（成败皆提交）等约定见 **`.cursor/rules/ruyisdk-examples-workflow.mdc`**（Cursor 全局生效）；`docs/design.md` §9 为开发/SSH 验收方式；各 Phase 细节以本文为准。
 
-**进度快照**：Phase 1–4 已完成。**已实现（与 `docs/design.md` 对齐）**：`BoardMeta.socVendor`（解析 `silicon_vendor`，兼容旧字段 `soc_vendor`）；侧栏 **桌面端全站常驻**且可收起、第一层按 **芯片厂商** 分组；侧栏搜索框常驻；首页搜索含 `cpu_core`/`ram`/`silicon_vendor` 等；板子详情 **dl 展示属性**；路由 **`/vendors/`、`/vendors/[vendor]/`**；`/socs/*` 仅作**兼容重定向**到对应芯片厂商页；已移除顶部面包屑导航。**未做**：`test-doc` 三级目录与各级 `README.md` 的 glob 迁移（仍兼容当前「板子顶层」结构）。
+**进度快照**：Phase 1–4 已完成。**已实现（与 `docs/design.md` 对齐）**：`BoardMeta.socVendor`（解析 `silicon_vendor`，兼容旧字段 `soc_vendor`）；侧栏 **桌面端全站常驻**且可收起、第一层按 **芯片厂商** 分组；侧栏搜索框常驻；首页搜索含 `cpu_core`/`ram`/`silicon_vendor` 等；板子详情 **dl 展示属性**；路由 **`/vendors/`、`/vendors/[vendor]/`**；`/socs/*` 仅作**兼容重定向**到对应芯片厂商页；已移除顶部面包屑导航。**未做**：`board-docs` 三级目录与各级 `README.md` 的 glob 迁移（仍兼容当前「板子顶层」结构）。
 
 ---
 
 ## 核心数据模型（板子优先）
 
-内容仓库 `test-doc/` 以**板子为顶层目录**，每块板子下嵌套多个示例子目录。数据层需反映这一层级关系。
+内容仓库 `board-docs/` 以**板子为顶层目录**，每块板子下嵌套多个示例子目录。数据层需反映这一层级关系。
 
 ### Board（板子）
 
-从 `test-doc/{BoardDir}/README.md` frontmatter 解析：
+从 `board-docs/{BoardDir}/README.md` frontmatter 解析：
 
 ```typescript
 type BoardMeta = {
@@ -31,7 +31,7 @@ type BoardMeta = {
 
 ### Example（示例）
 
-从 `test-doc/{BoardDir}/{ExampleDir}/*.md`（排除 README）的 frontmatter 解析：
+从 `board-docs/{BoardDir}/{ExampleDir}/*.md`（排除 README）的 frontmatter 解析：
 
 ```typescript
 type ExampleStatus = "basics" | "peripheral" | "benchmark" | "application";
@@ -51,14 +51,14 @@ type ExampleMeta = {
 
 ```typescript
 // 板子 README
-const boardReadmes = import.meta.glob("../../test-doc/*/README.md", { query: "?raw", import: "default", eager: true });
-const boardReadmesZh = import.meta.glob("../../test-doc/*/README_zh.md", { query: "?raw", import: "default", eager: true });
+const boardReadmes = import.meta.glob("../../board-docs/*/README.md", { query: "?raw", import: "default", eager: true });
+const boardReadmesZh = import.meta.glob("../../board-docs/*/README_zh.md", { query: "?raw", import: "default", eager: true });
 
 // 示例 Markdown（排除 README，扫两层深度）
-const exampleMds = import.meta.glob("../../test-doc/*/*/*.md", { query: "?raw", import: "default", eager: true });
+const exampleMds = import.meta.glob("../../board-docs/*/*/*.md", { query: "?raw", import: "default", eager: true });
 ```
 
-从路径提取：`test-doc/Duo_S/HelloWorld/example_HelloWorld_DuoS.md` → board=`Duo_S`, example=`HelloWorld`。
+从路径提取：`board-docs/Duo_S/HelloWorld/example_HelloWorld_DuoS.md` → board=`Duo_S`, example=`HelloWorld`。
 
 ---
 
@@ -103,7 +103,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 3. `astro.config.mjs`：集成 React + Tailwind
 4. 安装 shadcn/ui + Radix UI（参照 `./support-matrix-frontend/` 的版本和配置）
 5. `git submodule add` `support-matrix-frontend`（只读，不改其代码）
-6. `git submodule add https://github.com/DuoQilai/test-doc.git test-doc`
+6. `git submodule add https://github.com/ruyisdk/board-docs.git board-docs`
 7. 创建 `src/pages/index.astro`，写一行占位文本
 8. `pnpm dev --host 0.0.0.0 --port 3000` 确认能跑
 
@@ -117,7 +117,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
 
 1. 重写 `src/lib/data.ts`：
    - 类型 `BoardMeta`、`ExampleMeta`（见上面数据模型）
-   - `getAllBoards()` — glob 扫描 `test-doc/*/README.md`，解析 frontmatter，同时扫描子目录下的示例 .md
+   - `getAllBoards()` — glob 扫描 `board-docs/*/README.md`，解析 frontmatter，同时扫描子目录下的示例 .md
    - `getBoardBySlug(slug)` — 返回单个 `BoardMeta`（含 examples）
    - `getExampleMarkdown(boardSlug, exampleSlug)` — 返回示例正文（去掉 frontmatter）
    - `getBoardReadme(boardSlug, lang)` — 返回板子介绍正文
@@ -153,7 +153,7 @@ ssh -L 3000:localhost:3000 fengde@100.90.186.53
    - 顶部：返回板子详情链接 + 示例标题
    - 正文：`getExampleMarkdown(board, example)` → Markdown 渲染（remark-gfm + shiki 代码高亮）
    - 图片：示例 .md 中的相对路径图片需正确解析显示
-3. 图片静态服务：将 `test-doc/` 下的图片目录通过 Astro public 或 Vite 静态资源配置使其可访问
+3. 图片静态服务：将 `board-docs/` 下的图片目录通过 Astro public 或 Vite 静态资源配置使其可访问
 
 **验证**：板子详情页列出所有示例；示例详情页 Markdown 渲染正确，图片显示，代码高亮。
 
