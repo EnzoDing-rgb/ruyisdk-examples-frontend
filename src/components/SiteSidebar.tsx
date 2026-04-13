@@ -58,7 +58,7 @@ export function SiteSidebar({ boards, className }: SiteSidebarProps) {
     <aside
       className={cn(
         "border-border bg-background sticky top-0 hidden h-screen shrink-0 overflow-hidden border-r lg:flex",
-        collapsed ? "w-12" : "w-64",
+        collapsed ? "w-14" : "w-72",
         className,
       )}
     >
